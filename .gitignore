@@ -2,4 +2,5 @@ node_modules/
 .wrangler/
 .pages-dist/
 .dev.vars
+.setup-result.txt
 .DS_Store
