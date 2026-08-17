@@ -10,7 +10,7 @@ export async function onRequestGet({ params, env }) {
     cacheTtl: 86400
   });
 
-  if (!value) return new Response('Imagem não encontrada.', { status: 404 });
+  if (!value) return new Response('Arquivo não encontrado.', { status: 404 });
 
   return new Response(value, {
     headers: {
