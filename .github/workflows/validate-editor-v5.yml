@@ -1,0 +1,39 @@
+name: Validate editor v5
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin/**'
+      - 'assets/site-runtime.js'
+      - 'deploy-update.ps1'
+      - 'functions/api/health.js'
+      - '.github/workflows/validate-editor-v5.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript
+        run: |
+          node --check admin/admin.js
+          node --check assets/site-runtime.js
+      - name: Validate PowerShell parser
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path './deploy-update.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { $errors | Format-List; exit 1 }
+      - name: Validate editor architecture
+        shell: bash
+        run: |
+          grep -q '<meta name="editor-version" content="5">' admin/index.html
+          grep -q 'Prévia em tempo real' admin/index.html
+          grep -q 'Partes do site' admin/index.html
+          ! grep -Eqi 'CLASSES CSS|CSS INLINE|span-003|Ferramentas técnicas' admin/index.html
+          ! grep -Eqi 'overflow-x:auto|width:max-content' admin/admin.css
+          grep -q 'YouTube, Vimeo, TikTok, Instagram, Facebook' admin/admin.js
+          grep -q 'www.tiktok.com/player/v1' assets/site-runtime.js
+          grep -q 'quality=1080p&max_quality=4k' assets/site-runtime.js
