@@ -68,9 +68,8 @@ function Set-KvBindingInConfig {
 }
 
 Write-Host ''
-Write-Host '=== LYZANDRA | PUBLICAR EDITOR SIMPLES V4 ===' -ForegroundColor Cyan
+Write-Host '=== LYZANDRA | PUBLICAR EDITOR VISUAL V5 ===' -ForegroundColor Cyan
 
-# Preserva alteracoes locais antes de sincronizar.
 $dirty = (& git status --porcelain | Out-String).Trim()
 if ($dirty) {
     Write-Host "`nHa alteracoes locais. Criando backup automatico..." -ForegroundColor Yellow
@@ -91,14 +90,15 @@ $Commit = (& git rev-parse --short HEAD | Out-String).Trim()
 Write-Host "Commit: $Commit" -ForegroundColor Green
 
 $adminHtml = Get-Content -Raw -Path 'admin/index.html'
-if ($adminHtml -notmatch '<meta name="editor-version" content="4">') { throw 'Deploy cancelado: o Editor Simples v4 nao esta no codigo local.' }
+if ($adminHtml -notmatch '<meta name="editor-version" content="5">') { throw 'Deploy cancelado: o Editor Visual v5 nao esta no codigo local.' }
 if ($adminHtml -match 'CLASSES CSS|CSS INLINE|span-003|Ferramentas técnicas') { throw 'Deploy cancelado: foi detectada interface tecnica antiga.' }
-Write-Host 'Editor Simples v4 confirmado.' -ForegroundColor Green
+if ($adminHtml -notmatch 'Prévia em tempo real') { throw 'Deploy cancelado: a previa em tempo real nao foi encontrada.' }
+Write-Host 'Editor Visual v5 confirmado.' -ForegroundColor Green
 
 Invoke-Wrangler whoami
 $kv = Ensure-SiteContentKv
-
 $originalConfig = Get-Content -Raw -Path $ConfigPath
+
 try {
     Set-KvBindingInConfig -NamespaceId ([string]$kv.id)
     Write-Host 'Binding SITE_CONTENT preparado para este deploy.' -ForegroundColor Green
@@ -113,10 +113,10 @@ try {
     if (Test-Path 'images') { Copy-Item 'images' (Join-Path $OutputDir 'images') -Recurse -Force }
 
     $distAdmin = Get-Content -Raw -Path (Join-Path $OutputDir 'admin/index.html')
-    if ($distAdmin -notmatch '<meta name="editor-version" content="4">') { throw 'A pasta de deploy nao contem o Editor Simples v4.' }
+    if ($distAdmin -notmatch '<meta name="editor-version" content="5">') { throw 'A pasta de deploy nao contem o Editor Visual v5.' }
 
     Write-Host "`nPublicando em PRODUCAO..." -ForegroundColor Cyan
-    Invoke-Wrangler pages deploy $OutputDir --project-name $ProjectName --commit-hash $CommitFull --commit-message "Editor simples v4 $Commit"
+    Invoke-Wrangler pages deploy $OutputDir --project-name $ProjectName --commit-hash $CommitFull --commit-message "Editor visual v5 $Commit"
 
     Write-Host "`nVerificando editor e KV no site online..." -ForegroundColor Cyan
     $verified = $false
@@ -133,7 +133,7 @@ try {
             $lastHealth = [string]$healthResponse.Content
             $health = $lastHealth | ConvertFrom-Json
 
-            if ($adminBody -match '<meta name="editor-version" content="4">' -and $health.kv -eq $true) {
+            if ($adminBody -match '<meta name="editor-version" content="5">' -and $adminBody -match 'Prévia em tempo real' -and $health.kv -eq $true) {
                 $verified = $true
                 break
             }
@@ -148,12 +148,12 @@ try {
         Write-Host "`nO deploy terminou, mas a verificacao online falhou." -ForegroundColor Red
         Write-Host "Resposta do health: $lastHealth" -ForegroundColor Yellow
         & npx --yes wrangler@latest pages deployment list --project-name $ProjectName
-        throw 'Editor v4 ou binding SITE_CONTENT nao foi confirmado online. Envie a saida acima.'
+        throw 'Editor v5 ou binding SITE_CONTENT nao foi confirmado online. Envie a saida acima.'
     }
 
     Write-Host ''
     Write-Host '=============================================' -ForegroundColor Green
-    Write-Host 'EDITOR V4 E KV PUBLICADOS E VERIFICADOS' -ForegroundColor Green
+    Write-Host 'EDITOR V5 + PREVIA AO VIVO + KV VERIFICADOS' -ForegroundColor Green
     Write-Host "Commit: $Commit" -ForegroundColor White
     Write-Host "Site:   $ProductionUrl" -ForegroundColor White
     Write-Host "Admin:  $ProductionUrl/admin/?v=$Commit" -ForegroundColor White
