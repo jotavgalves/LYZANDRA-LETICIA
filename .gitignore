@@ -1,4 +1,5 @@
 node_modules/
 .wrangler/
+.pages-dist/
 .dev.vars
 .DS_Store
