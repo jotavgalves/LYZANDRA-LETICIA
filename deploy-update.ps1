@@ -14,7 +14,6 @@ Write-Host ''
 Write-Host '=== PUBLICANDO EDITOR FACIL V3 ===' -ForegroundColor Cyan
 Write-Host 'O script vai sincronizar a main, montar a pasta final, publicar explicitamente em producao e conferir o site online.' -ForegroundColor DarkGray
 
-# 1. Preserva alteracoes locais e sincroniza exatamente com origin/main.
 $dirty = (& git status --porcelain | Out-String).Trim()
 if ($dirty) {
     Write-Host "`nHa alteracoes locais. Criando backup automatico com git stash..." -ForegroundColor Yellow
@@ -34,7 +33,6 @@ $CommitFull = (& git rev-parse HEAD | Out-String).Trim()
 $Commit = (& git rev-parse --short HEAD | Out-String).Trim()
 Write-Host "Commit que sera publicado: $Commit" -ForegroundColor Green
 
-# 2. Confirma que o codigo local e realmente o editor novo.
 $adminHtml = Get-Content -Raw -Path 'admin/index.html'
 if ($adminHtml -notmatch '<meta name="editor-version" content="3">') {
     throw 'Deploy cancelado: admin/index.html nao e o Editor Facil v3.'
@@ -44,10 +42,8 @@ if ($adminHtml -match 'LYZANDRA EDITOR|CLASSES CSS|CSS INLINE|span-003') {
 }
 Write-Host 'Editor Facil v3 confirmado no codigo local.' -ForegroundColor Green
 
-# 3. Confirma autenticacao Cloudflare.
 Invoke-Wrangler whoami
 
-# 4. Monta SOMENTE o conteudo que deve ir para o Pages.
 Write-Host "`nMontando $OutputDir..." -ForegroundColor Cyan
 Remove-Item $OutputDir -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $OutputDir | Out-Null
@@ -57,18 +53,15 @@ Copy-Item 'admin' (Join-Path $OutputDir 'admin') -Recurse -Force
 if (Test-Path 'assets') { Copy-Item 'assets' (Join-Path $OutputDir 'assets') -Recurse -Force }
 if (Test-Path 'images') { Copy-Item 'images' (Join-Path $OutputDir 'images') -Recurse -Force }
 
-# Confere a propria pasta de upload antes de chamar Wrangler.
 $distAdmin = Get-Content -Raw -Path (Join-Path $OutputDir 'admin/index.html')
 if ($distAdmin -notmatch '<meta name="editor-version" content="3">' -or $distAdmin -match 'LYZANDRA EDITOR|CLASSES CSS|CSS INLINE') {
     throw "A pasta $OutputDir nao contem o Editor Facil v3. Deploy cancelado."
 }
 Write-Host "Pasta $OutputDir validada." -ForegroundColor Green
 
-# 5. Publica explicitamente a pasta de saida. Sem --branch: Direct Upload vai para producao.
 Write-Host "`nEnviando $OutputDir para o ambiente de PRODUCAO..." -ForegroundColor Cyan
 Invoke-Wrangler pages deploy $OutputDir --project-name $ProjectName --commit-hash $CommitFull --commit-message "Editor facil v3 $Commit"
 
-# 6. Confere o proprio pages.dev. Faz varias tentativas porque o alias de producao pode levar alguns segundos.
 Write-Host "`nConferindo o site publicado..." -ForegroundColor Cyan
 $verified = $false
 $lastBody = ''
@@ -83,7 +76,7 @@ for ($attempt = 1; $attempt -le 8; $attempt++) {
             break
         }
     } catch {
-        Write-Host "Tentativa $attempt: site ainda nao respondeu com a versao nova." -ForegroundColor DarkYellow
+        Write-Host "Tentativa ${attempt}: site ainda nao respondeu com a versao nova." -ForegroundColor DarkYellow
     }
     Start-Sleep -Seconds 3
 }
