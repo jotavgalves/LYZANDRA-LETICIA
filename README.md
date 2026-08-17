@@ -1,73 +1,49 @@
 # LYZANDRA LETICIA — Speed Lash
 
-Clone estático e editável da referência fornecida, preparado para Cloudflare Pages.
+Clone estático e totalmente editável da referência, preparado para Cloudflare Pages.
 
 ## Arquitetura
 
-- `index.html`: landing page baseada no HTML renderizado da referência.
+- `index.html`: landing page.
 - `admin/`: editor visual em `/admin/`.
-- `functions/api/`: autenticação, conteúdo e upload.
-- **Workers KV (`SITE_CONTENT`)**: guarda textos, links, estilos, SEO, ordem das seções e demais personalizações do painel.
-- **GitHub branch `media`**: guarda as imagens enviadas pelo painel em `uploads/AAAA-MM-DD/`.
-- `_routes.json`: executa Pages Functions somente em `/api/*`.
+- `functions/api/`: login, sessão, conteúdo e upload.
+- `functions/media/`: entrega das imagens armazenadas no KV.
+- `SITE_CONTENT` (Workers KV): guarda textos, links, estilos, SEO, ordem das seções e também as imagens enviadas pelo painel.
+- `_routes.json`: executa Pages Functions apenas em `/api/*` e `/media/*`.
 
-## Sem R2
+## Sem R2 e sem token do GitHub
 
-O projeto não usa mais Cloudflare R2.
+O projeto não usa Cloudflare R2 e o upload de imagens não precisa mais de GitHub PAT.
 
-Quando uma imagem é enviada no painel:
+As imagens são gravadas no próprio KV com chaves `media:*`. O painel limita cada arquivo a 10 MB.
 
-1. `/api/upload` valida a sessão e o arquivo.
-2. A Pages Function usa um token restrito do GitHub.
-3. A imagem é gravada na branch `media`, sem alterar a `main`.
-4. O painel recebe uma URL de `raw.githubusercontent.com` e a aplica ao elemento selecionado.
+## Instalação automática
 
-A branch `media` é separada para evitar que cada troca de imagem gere um commit na branch de produção.
+Depois de clonar o repositório, rode no PowerShell:
 
-## Configuração necessária no Cloudflare Pages
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\setup-cloudflare.ps1
+```
 
-### 1. KV
+O script:
 
-Crie um namespace KV e conecte-o ao projeto com o binding:
+1. autentica o Wrangler na sua conta Cloudflare;
+2. cria o projeto Pages caso ainda não exista;
+3. cria o namespace KV e adiciona o binding `SITE_CONTENT` ao `wrangler.jsonc`;
+4. gera automaticamente `ADMIN_PASSWORD` e `SESSION_SECRET`;
+5. grava os secrets no Pages;
+6. prepara os arquivos estáticos;
+7. faz o deploy.
 
-`SITE_CONTENT`
-
-### 2. Secrets / variáveis
-
-Configure:
-
-- `ADMIN_PASSWORD`: senha do painel.
-- `SESSION_SECRET`: segredo longo e aleatório para as sessões.
-- `GITHUB_TOKEN`: Fine-grained Personal Access Token do GitHub.
-- `GITHUB_REPO`: opcional; padrão `jotavgalves/LYZANDRA-LETICIA`.
-- `GITHUB_MEDIA_BRANCH`: opcional; padrão `media`.
-
-O `GITHUB_TOKEN` deve ter acesso **somente** ao repositório `jotavgalves/LYZANDRA-LETICIA` e, em **Repository permissions**, permissão **Contents: Read and write**. Não coloque o token no código nem faça commit dele.
-
-A branch `media` já existe no repositório.
-
-## Uploads
-
-- Tipos aceitos: imagens (`image/*`).
-- Limite por arquivo no painel: 10 MB.
-- Caminho: `uploads/AAAA-MM-DD/UUID-nome-do-arquivo` na branch `media`.
-- As URLs retornadas são públicas porque este repositório é público.
+No final ele mostra a senha gerada para `/admin/`.
 
 ## Desenvolvimento local
 
+Depois que `wrangler.jsonc` tiver o binding criado:
+
 ```powershell
-npm install
-Copy-Item .dev.vars.example .dev.vars
-npx wrangler pages dev .
+npx wrangler pages dev .pages-dist
 ```
 
-Edite `.dev.vars` com valores reais. Esse arquivo deve continuar fora do Git.
-
-Abra:
-
-- `http://localhost:8788`
-- `http://localhost:8788/admin/`
-
-## Cloudflare Pages
-
-Projeto sem framework: o build command pode ficar vazio. O site público é servido como asset estático e Pages Functions são utilizadas apenas nas rotas `/api/*`.
+O site público continua majoritariamente estático; Functions são chamadas apenas para API/admin e imagens armazenadas no KV.
