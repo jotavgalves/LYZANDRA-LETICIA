@@ -2,5 +2,11 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "lyzandra-leticia",
   "pages_build_output_dir": ".pages-dist",
-  "compatibility_date": "2026-08-17"
+  "compatibility_date": "2026-08-17",
+  "kv_namespaces": [
+    {
+      "binding": "SITE_CONTENT",
+      "id": "9508c82cd8294ef885b1713e09381ef6"
+    }
+  ]
 }
