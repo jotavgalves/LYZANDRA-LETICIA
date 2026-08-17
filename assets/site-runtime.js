@@ -73,6 +73,13 @@
       document.head.appendChild(style);
     }
     style.textContent = site.customCss || '';
+
+    if (!qs('script[data-identity-runtime]')) {
+      const identityRuntime = document.createElement('script');
+      identityRuntime.src = '/assets/identity-runtime.js?v=1';
+      identityRuntime.dataset.identityRuntime = '1';
+      document.head.appendChild(identityRuntime);
+    }
   }
 
   function applyOrder(order = []) {
