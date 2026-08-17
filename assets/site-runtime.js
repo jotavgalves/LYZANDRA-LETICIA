@@ -1,5 +1,5 @@
 (() => {
-  const DEFAULT = { version: 1, patches: {}, sectionOrder: [], site: { customCss: '' } };
+  const DEFAULT = { version: 2, patches: {}, sectionOrder: [], site: { customCss: '', theme: {} }, videos: {} };
   const qs = (s, root=document) => root.querySelector(s);
   const qsa = (s, root=document) => [...root.querySelectorAll(s)];
 
@@ -8,7 +8,12 @@
       ...DEFAULT,
       ...(data || {}),
       patches: { ...DEFAULT.patches, ...((data && data.patches) || {}) },
-      site: { ...DEFAULT.site, ...((data && data.site) || {}) }
+      videos: { ...DEFAULT.videos, ...((data && data.videos) || {}) },
+      site: {
+        ...DEFAULT.site,
+        ...((data && data.site) || {}),
+        theme: { ...DEFAULT.site.theme, ...((data && data.site && data.site.theme) || {}) }
+      }
     };
   }
 
@@ -24,11 +29,24 @@
         else el.setAttribute(k, String(v));
       });
     }
-    if (patch.hidden === true) {
-      el.dataset.editorHidden = 'true';
-    } else if (patch.hidden === false) {
-      delete el.dataset.editorHidden;
-    }
+    if (patch.hidden === true) el.dataset.editorHidden = 'true';
+    else if (patch.hidden === false) delete el.dataset.editorHidden;
+  }
+
+  function applyTheme(theme={}) {
+    const root = document.documentElement;
+    const vars = {
+      primary: '--primary',
+      background: '--background',
+      foreground: '--foreground',
+      card: '--card',
+      muted: '--muted-foreground'
+    };
+    Object.entries(vars).forEach(([key, cssVar]) => {
+      const value = theme[key];
+      if (value) root.style.setProperty(cssVar, value);
+      else root.style.removeProperty(cssVar);
+    });
   }
 
   function applySite(site={}) {
@@ -38,6 +56,7 @@
       if (!meta) { meta=document.createElement('meta'); meta.name='description'; document.head.appendChild(meta); }
       meta.content = site.description;
     }
+    applyTheme(site.theme || {});
     let style = qs('#site-custom-css');
     if (!style) { style=document.createElement('style'); style.id='site-custom-css'; document.head.appendChild(style); }
     style.textContent = site.customCss || '';
@@ -50,16 +69,129 @@
     order.forEach(id => { const el=map.get(id); if (el) main.appendChild(el); });
   }
 
+  function youtubeId(url) {
+    try {
+      const u = new URL(url);
+      if (u.hostname.includes('youtu.be')) return u.pathname.split('/').filter(Boolean)[0] || '';
+      if (u.hostname.includes('youtube.com')) {
+        if (u.pathname.startsWith('/embed/')) return u.pathname.split('/')[2] || '';
+        if (u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2] || '';
+        return u.searchParams.get('v') || '';
+      }
+    } catch {}
+    return '';
+  }
+
+  function vimeoId(url) {
+    try {
+      const u = new URL(url);
+      if (!u.hostname.includes('vimeo.com')) return '';
+      return u.pathname.split('/').filter(Boolean).find(x => /^\d+$/.test(x)) || '';
+    } catch {}
+    return '';
+  }
+
+  function makePlayer(url, cfg={}) {
+    const yt = youtubeId(url);
+    const vi = vimeoId(url);
+    const autoplay = cfg.autoplay ? '1' : '0';
+    const controls = cfg.controls === false ? '0' : '1';
+
+    if (yt) {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(yt)}?autoplay=${autoplay}&controls=${controls}&rel=0&playsinline=1`;
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.title = cfg.title || 'Vídeo';
+      return iframe;
+    }
+    if (vi) {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://player.vimeo.com/video/${encodeURIComponent(vi)}?autoplay=${autoplay}&controls=${controls}`;
+      iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.title = cfg.title || 'Vídeo';
+      return iframe;
+    }
+
+    const isDirect = /\.(mp4|webm|ogg)(?:$|[?#])/i.test(url) || url.startsWith('/media/');
+    if (isDirect) {
+      const video = document.createElement('video');
+      video.src = url;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      video.controls = cfg.controls !== false;
+      if (cfg.autoplay) { video.autoplay = true; video.muted = true; }
+      return video;
+    }
+
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+    iframe.allowFullscreen = true;
+    iframe.title = cfg.title || 'Vídeo';
+    return iframe;
+  }
+
+  function mountOneVideo(id, cfg={}) {
+    const source = qs(`[data-edit-id="${CSS.escape(id)}"]`);
+    if (!source) return;
+    const host = source.parentElement;
+    if (!host) return;
+
+    const previous = host.querySelector(`:scope > .site-video-player[data-video-for="${CSS.escape(id)}"]`);
+    if (previous) previous.remove();
+    source.hidden = false;
+    source.removeAttribute('aria-hidden');
+
+    const url = String(cfg.url || '').trim();
+    if (!url) return;
+
+    source.hidden = true;
+    source.setAttribute('aria-hidden', 'true');
+
+    const wrap = document.createElement('div');
+    wrap.className = 'site-video-player';
+    wrap.dataset.videoFor = id;
+    wrap.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#000;';
+
+    const openPlayer = () => {
+      wrap.innerHTML = '';
+      const player = makePlayer(url, cfg);
+      player.style.cssText = 'width:100%;height:100%;border:0;display:block;object-fit:cover;';
+      wrap.appendChild(player);
+    };
+
+    if (cfg.poster && !cfg.autoplay) {
+      const cover = document.createElement('button');
+      cover.type = 'button';
+      cover.setAttribute('aria-label', 'Reproduzir vídeo');
+      cover.style.cssText = `position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;cursor:pointer;background:#000 url("${String(cfg.poster).replace(/"/g, '%22')}") center/cover no-repeat;`;
+      cover.innerHTML = '<span style="position:absolute;inset:0;background:rgba(0,0,0,.18)"></span><span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:999px;background:#dc2626;color:#fff;display:grid;place-items:center;font-size:26px;box-shadow:0 10px 30px rgba(0,0,0,.35)">▶</span>';
+      cover.addEventListener('click', openPlayer, {once:true});
+      wrap.appendChild(cover);
+    } else {
+      openPlayer();
+    }
+
+    host.appendChild(wrap);
+  }
+
+  function applyVideos(videos={}) {
+    Object.entries(videos || {}).forEach(([id,cfg]) => mountOneVideo(id, cfg || {}));
+  }
+
   async function loadContent() {
     let data = DEFAULT;
     try {
       const r = await fetch('/api/content', {cache:'no-store'});
       if (r.ok) data = mergeData(await r.json());
-    } catch (_) { /* Site remains fully usable without bindings/API. */ }
+    } catch (_) {}
     window.__SITE_CONTENT__ = data;
     Object.entries(data.patches || {}).forEach(([id,patch]) => applyPatch(qs(`[data-edit-id="${CSS.escape(id)}"]`), patch));
     applyOrder(data.sectionOrder);
     applySite(data.site);
+    applyVideos(data.videos);
     window.dispatchEvent(new CustomEvent('site-content-ready', {detail:data}));
     return data;
   }
