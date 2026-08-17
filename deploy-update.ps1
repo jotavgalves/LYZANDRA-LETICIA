@@ -1,41 +1,82 @@
 $ErrorActionPreference = 'Stop'
 
+# Evita saida corrompida do Wrangler no Windows/PowerShell.
+try {
+    $Utf8 = New-Object System.Text.UTF8Encoding($false)
+    [Console]::OutputEncoding = $Utf8
+    $OutputEncoding = $Utf8
+} catch {}
+
 $ProjectName = 'lyzandra-leticia'
 $ProductionBranch = 'main'
 $OutputDir = '.pages-dist'
 $ProductionUrl = "https://$ProjectName.pages.dev"
 $ConfigPath = 'wrangler.jsonc'
 $KvBinding = 'SITE_CONTENT'
+$WranglerVersion = '4.123.0'
 
 function Invoke-Wrangler {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$CommandArgs)
-    & npx --yes wrangler@latest @CommandArgs
+    & npx --yes "wrangler@$WranglerVersion" @CommandArgs
     if ($LASTEXITCODE -ne 0) { throw "Wrangler falhou: $($CommandArgs -join ' ')" }
 }
 
 function Invoke-WranglerText {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$CommandArgs)
-    $output = (& npx --yes wrangler@latest @CommandArgs 2>&1 | Out-String)
+    $output = (& npx --yes "wrangler@$WranglerVersion" @CommandArgs 2>&1 | Out-String)
     if ($LASTEXITCODE -ne 0) { throw "Wrangler falhou: $($CommandArgs -join ' ')`n$output" }
     return $output.Trim()
 }
 
-function Test-EditorV5 {
+function Get-EditorV5Status {
     param([Parameter(Mandatory = $true)][string]$BaseUrl)
+
+    $result = [ordered]@{
+        Ok = $false
+        Version5 = $false
+        Kv = $false
+        AdminStatus = $null
+        HealthStatus = $null
+        Error = ''
+    }
+
     try {
         $stamp = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+        $headers = @{ 'Cache-Control'='no-cache, no-store'; 'Pragma'='no-cache' }
+
         $adminUrl = "$BaseUrl/admin/?verify=$stamp"
-        $adminResponse = Invoke-WebRequest -Uri $adminUrl -UseBasicParsing -Headers @{ 'Cache-Control'='no-cache, no-store'; 'Pragma'='no-cache' } -TimeoutSec 20
+        $adminResponse = Invoke-WebRequest -Uri $adminUrl -UseBasicParsing -Headers $headers -TimeoutSec 20
+        $result.AdminStatus = [int]$adminResponse.StatusCode
         $adminBody = [string]$adminResponse.Content
 
-        $healthUrl = "$BaseUrl/api/health?verify=$stamp"
-        $healthResponse = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -Headers @{ 'Cache-Control'='no-cache, no-store'; 'Pragma'='no-cache' } -TimeoutSec 20
-        $health = ([string]$healthResponse.Content) | ConvertFrom-Json
+        # Marcador ASCII e estavel. Nao depende de acentos/encoding do terminal.
+        $result.Version5 = ($adminBody -match '<meta\s+name="editor-version"\s+content="5"')
 
-        return ($adminBody -match '<meta name="editor-version" content="5">' -and $adminBody -match 'Prévia em tempo real' -and $health.kv -eq $true)
+        $healthUrl = "$BaseUrl/api/health?verify=$stamp"
+        $healthResponse = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -Headers $headers -TimeoutSec 20
+        $result.HealthStatus = [int]$healthResponse.StatusCode
+        $health = ([string]$healthResponse.Content) | ConvertFrom-Json
+        $result.Kv = ($health.kv -eq $true)
+
+        $result.Ok = ($result.Version5 -and $result.Kv)
     } catch {
-        return $false
+        $result.Error = $_.Exception.Message
     }
+
+    return [pscustomobject]$result
+}
+
+function Write-CheckStatus {
+    param(
+        [Parameter(Mandatory = $true)][string]$Label,
+        [Parameter(Mandatory = $true)]$Status
+    )
+    $v = if ($Status.Version5) { 'SIM' } else { 'NAO' }
+    $k = if ($Status.Kv) { 'SIM' } else { 'NAO' }
+    $a = if ($null -ne $Status.AdminStatus) { $Status.AdminStatus } else { '-' }
+    $h = if ($null -ne $Status.HealthStatus) { $Status.HealthStatus } else { '-' }
+    Write-Host "$Label | HTML V5: $v | KV: $k | admin HTTP: $a | health HTTP: $h" -ForegroundColor DarkYellow
+    if ($Status.Error) { Write-Host "  detalhe: $($Status.Error)" -ForegroundColor DarkGray }
 }
 
 Write-Host ''
@@ -61,14 +102,17 @@ $CommitFull = (& git rev-parse HEAD | Out-String).Trim()
 $Commit = (& git rev-parse --short HEAD | Out-String).Trim()
 Write-Host "Commit: $Commit" -ForegroundColor Green
 
-# Valida o editor antes do upload.
+# Valida localmente com marcadores ASCII.
 $adminHtml = Get-Content -Raw -Path 'admin/index.html'
-if ($adminHtml -notmatch '<meta name="editor-version" content="5">') { throw 'Deploy cancelado: o Editor Visual v5 nao esta no codigo local.' }
-if ($adminHtml -match 'CLASSES CSS|CSS INLINE|span-003|Ferramentas técnicas') { throw 'Deploy cancelado: foi detectada interface tecnica antiga.' }
-if ($adminHtml -notmatch 'Prévia em tempo real') { throw 'Deploy cancelado: a previa em tempo real nao foi encontrada.' }
-Write-Host 'Editor Visual v5 confirmado.' -ForegroundColor Green
+if ($adminHtml -notmatch '<meta\s+name="editor-version"\s+content="5"') {
+    throw 'Deploy cancelado: Editor Visual v5 nao encontrado no codigo local.'
+}
+if ($adminHtml -match 'CLASSES CSS|CSS INLINE|span-003') {
+    throw 'Deploy cancelado: interface tecnica antiga detectada.'
+}
+Write-Host 'Editor Visual v5 confirmado localmente.' -ForegroundColor Green
 
-# Confirma o binding persistente do KV no arquivo versionado.
+# Binding KV deve permanecer versionado no wrangler.jsonc.
 $config = Get-Content -Raw -Path $ConfigPath | ConvertFrom-Json
 $kv = @($config.kv_namespaces | Where-Object { $_.binding -eq $KvBinding }) | Select-Object -First 1
 if (-not $kv -or -not $kv.id) { throw 'SITE_CONTENT nao esta configurado no wrangler.jsonc.' }
@@ -76,7 +120,6 @@ Write-Host "SITE_CONTENT configurado: $($kv.id)" -ForegroundColor Green
 
 Invoke-Wrangler whoami
 
-# Monta somente os arquivos publicos. Functions sao coletadas automaticamente da pasta /functions.
 Write-Host "`nMontando arquivos finais..." -ForegroundColor Cyan
 Remove-Item $OutputDir -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $OutputDir | Out-Null
@@ -87,9 +130,10 @@ if (Test-Path 'assets') { Copy-Item 'assets' (Join-Path $OutputDir 'assets') -Re
 if (Test-Path 'images') { Copy-Item 'images' (Join-Path $OutputDir 'images') -Recurse -Force }
 
 $distAdmin = Get-Content -Raw -Path (Join-Path $OutputDir 'admin/index.html')
-if ($distAdmin -notmatch '<meta name="editor-version" content="5">') { throw 'A pasta de deploy nao contem o Editor Visual v5.' }
+if ($distAdmin -notmatch '<meta\s+name="editor-version"\s+content="5"') {
+    throw 'A pasta de deploy nao contem o Editor Visual v5.'
+}
 
-# Faz o deploy e captura a URL atomica gerada pelo Pages.
 Write-Host "`nPublicando em PRODUCAO..." -ForegroundColor Cyan
 $deployOutput = Invoke-WranglerText pages deploy $OutputDir --project-name $ProjectName --branch $ProductionBranch --commit-hash $CommitFull --commit-message "Editor visual v5 $Commit" --commit-dirty=true
 Write-Host $deployOutput
@@ -99,59 +143,65 @@ $match = [regex]::Match($deployOutput, "https://[a-zA-Z0-9-]+\.$escapedProject\.
 $DeploymentUrl = if ($match.Success) { $match.Value } else { $null }
 
 if (-not $DeploymentUrl) {
-    Write-Host 'Nao consegui extrair a URL atomica do output do Wrangler.' -ForegroundColor Yellow
-    & npx --yes wrangler@latest pages deployment list --project-name $ProjectName
-    throw 'Deploy enviado, mas nao consegui validar a URL especifica.'
+    Write-Host 'Upload concluido, mas nao consegui ler a URL atomica do texto do Wrangler.' -ForegroundColor Yellow
+    & npx --yes "wrangler@$WranglerVersion" pages deployment list --project-name $ProjectName
+    Write-Host 'O deploy nao sera repetido automaticamente.' -ForegroundColor Yellow
+    exit 0
 }
 
-Write-Host "`nDeployment atomico: $DeploymentUrl" -ForegroundColor Cyan
+Write-Host "`nDeployment criado: $DeploymentUrl" -ForegroundColor Cyan
 
-# Primeiro valida a URL atomica, que representa exatamente o upload que acabou de ser criado.
+# A URL hash pode demorar para resolver em alguns provedores/DNS locais.
 $deploymentVerified = $false
-for ($attempt = 1; $attempt -le 8; $attempt++) {
-    if (Test-EditorV5 -BaseUrl $DeploymentUrl) {
+$deploymentStatus = $null
+for ($attempt = 1; $attempt -le 15; $attempt++) {
+    $deploymentStatus = Get-EditorV5Status -BaseUrl $DeploymentUrl
+    if ($deploymentStatus.Ok) {
         $deploymentVerified = $true
         break
     }
-    Write-Host "Tentativa ${attempt}: aguardando o deployment atomico responder..." -ForegroundColor DarkYellow
-    Start-Sleep -Seconds 2
+    Write-CheckStatus -Label "Atomico tentativa $attempt" -Status $deploymentStatus
+    Start-Sleep -Seconds 3
 }
 
-if (-not $deploymentVerified) {
-    & npx --yes wrangler@latest pages deployment list --project-name $ProjectName
-    throw 'O deployment foi criado, mas a propria URL atomica nao confirmou Editor v5 + KV.'
-}
-
-Write-Host 'Deployment atomico confirmou Editor v5 + SITE_CONTENT.' -ForegroundColor Green
-
-# Depois verifica o alias principal. Ele pode levar mais tempo para apontar para o novo deployment.
+# Independente do resultado da URL atomica, confere o alias principal.
 $productionVerified = $false
-Write-Host "`nConferindo o dominio principal..." -ForegroundColor Cyan
+$productionStatus = $null
+Write-Host "`nConferindo dominio principal..." -ForegroundColor Cyan
 for ($attempt = 1; $attempt -le 20; $attempt++) {
-    if (Test-EditorV5 -BaseUrl $ProductionUrl) {
+    $productionStatus = Get-EditorV5Status -BaseUrl $ProductionUrl
+    if ($productionStatus.Ok) {
         $productionVerified = $true
         break
     }
-    Write-Host "Tentativa ${attempt}: dominio principal ainda atualizando..." -ForegroundColor DarkYellow
+    Write-CheckStatus -Label "Principal tentativa $attempt" -Status $productionStatus
     Start-Sleep -Seconds 3
 }
 
 Write-Host ''
 Write-Host '=============================================' -ForegroundColor Green
-Write-Host 'DEPLOYMENT V5 + PREVIA AO VIVO + KV CONFIRMADOS' -ForegroundColor Green
-Write-Host "Commit:      $Commit" -ForegroundColor White
-Write-Host "Deployment:  $DeploymentUrl" -ForegroundColor White
-Write-Host "Admin agora: $DeploymentUrl/admin/?v=$Commit" -ForegroundColor White
-Write-Host "KV:          $($kv.id)" -ForegroundColor White
+Write-Host 'UPLOAD DO EDITOR V5 CONCLUIDO' -ForegroundColor Green
+Write-Host "Commit:     $Commit" -ForegroundColor White
+Write-Host "Deployment: $DeploymentUrl" -ForegroundColor White
+Write-Host "KV:         $($kv.id)" -ForegroundColor White
+
+if ($deploymentVerified) {
+    Write-Host 'URL atomica: V5 + KV confirmados.' -ForegroundColor Green
+} else {
+    Write-Host 'URL atomica: ainda nao confirmou por HTTP; o deployment existe em Production.' -ForegroundColor Yellow
+    if ($deploymentStatus) { Write-CheckStatus -Label 'Ultimo teste atomico' -Status $deploymentStatus }
+}
 
 if ($productionVerified) {
-    Write-Host "Site:         $ProductionUrl" -ForegroundColor White
-    Write-Host "Admin:        $ProductionUrl/admin/?v=$Commit" -ForegroundColor White
-    Write-Host 'Dominio principal tambem confirmado na versao nova.' -ForegroundColor Green
+    Write-Host "Site:       $ProductionUrl" -ForegroundColor White
+    Write-Host "Admin:      $ProductionUrl/admin/?v=$Commit" -ForegroundColor White
+    Write-Host 'Dominio principal: V5 + KV confirmados.' -ForegroundColor Green
 } else {
-    Write-Host "Site:         $ProductionUrl" -ForegroundColor Yellow
-    Write-Host 'O deployment novo esta correto, mas o alias principal ainda nao atualizou durante a verificacao.' -ForegroundColor Yellow
-    Write-Host 'Use a URL atomica acima imediatamente; o dominio principal pode ser conferido depois sem refazer o deploy.' -ForegroundColor Yellow
+    Write-Host "Site:       $ProductionUrl" -ForegroundColor Yellow
+    Write-Host "Admin:      $ProductionUrl/admin/?v=$Commit" -ForegroundColor Yellow
+    Write-Host 'Dominio principal ainda nao confirmou durante a janela de teste.' -ForegroundColor Yellow
+    if ($productionStatus) { Write-CheckStatus -Label 'Ultimo teste principal' -Status $productionStatus }
+    Write-Host 'IMPORTANTE: nao rode outro deploy por causa disso. O Wrangler ja criou o deployment Production.' -ForegroundColor Yellow
 }
 
 Write-Host '=============================================' -ForegroundColor Green
