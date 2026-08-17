@@ -1,8 +1,8 @@
 import { isAuthed, json } from '../../src/auth.js';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
-function safeName(name = 'imagem') {
+function safeName(name = 'arquivo') {
   const clean = name
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -10,7 +10,7 @@ function safeName(name = 'imagem') {
     .replace(/-+/g, '-')
     .replace(/^[-.]+|[-.]+$/g, '')
     .slice(-100);
-  return clean || 'imagem';
+  return clean || 'arquivo';
 }
 
 export async function onRequestPost({ request, env }) {
@@ -20,20 +20,24 @@ export async function onRequestPost({ request, env }) {
   const form = await request.formData();
   const file = form.get('file');
   if (!(file instanceof File)) return json({ error: 'Arquivo não enviado.' }, 400);
-  if (!String(file.type || '').startsWith('image/')) return json({ error: 'Envie uma imagem.' }, 415);
-  if (file.size > MAX_FILE_SIZE) return json({ error: 'Arquivo maior que 10 MB.' }, 413);
+
+  const type = String(file.type || '');
+  const accepted = type.startsWith('image/') || type.startsWith('video/');
+  if (!accepted) return json({ error: 'Envie uma imagem ou vídeo.' }, 415);
+  if (file.size > MAX_FILE_SIZE) return json({ error: 'Arquivo maior que 20 MB. Para vídeos maiores, cole um link do YouTube, Vimeo ou MP4.' }, 413);
 
   const slug = `${crypto.randomUUID()}-${safeName(file.name)}`;
   const key = `media:${slug}`;
-  const contentType = String(file.type || 'application/octet-stream');
+  const contentType = type || 'application/octet-stream';
 
   await env.SITE_CONTENT.put(key, await file.arrayBuffer(), {
     metadata: {
       contentType,
       originalName: file.name,
+      kind: type.startsWith('video/') ? 'video' : 'image',
       uploadedAt: new Date().toISOString()
     }
   });
 
-  return json({ ok: true, key, url: `/media/${encodeURIComponent(slug)}` });
+  return json({ ok: true, key, type: contentType, url: `/media/${encodeURIComponent(slug)}` });
 }
