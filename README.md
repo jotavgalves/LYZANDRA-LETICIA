@@ -5,8 +5,8 @@ Clone estático e editável da referência fornecida, preparado para Cloudflare 
 ## Estrutura
 
 - `index.html`: landing page baseada no HTML renderizado da referência.
-- `assets/original.css`: CSS visual capturado da referência.
-- `images/`: imagens originais fornecidas no pacote.
+- O CSS visual base e as imagens da referência são carregados da origem pública nesta primeira publicação; pelo painel podem ser substituídos e, no PowerShell, podem ser internalizados no projeto.
+- Imagens da referência são carregadas da origem pública nesta primeira publicação; pelo painel podem ser substituídas por uploads no R2.
 - `admin/`: editor visual em `/admin/`.
 - `functions/api/`: autenticação, conteúdo e upload.
 - `functions/media/`: entrega das imagens enviadas ao R2.

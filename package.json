@@ -1,0 +1,12 @@
+{
+  "name": "lyzandra-leticia-speed-lash",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages deploy ."
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
