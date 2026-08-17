@@ -1,0 +1,43 @@
+name: Validate easy editor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin/**'
+      - 'assets/site-runtime.js'
+      - 'index.html'
+      - '.github/workflows/validate-easy-editor.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript
+        run: |
+          node --check admin/admin.js
+          node --check assets/site-runtime.js
+      - name: Ensure public runtime is loaded
+        run: |
+          if ! grep -q '/assets/site-runtime.js' index.html; then
+            python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('</body>', '<script src="/assets/site-runtime.js"></script></body>')
+          p.write_text(s, encoding='utf-8')
+          PY
+          fi
+      - name: Commit runtime link if needed
+        run: |
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add index.html
+            git commit -m 'fix: ensure editable runtime is loaded'
+            git push
+          fi
