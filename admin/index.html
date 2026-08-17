@@ -4,103 +4,69 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light">
-  <meta name="editor-version" content="4">
-  <title>Editar site | Lyzandra</title>
-  <link rel="stylesheet" href="/admin/admin.css?v=4">
+  <meta name="editor-version" content="5">
+  <title>Editor visual | Lyzandra</title>
+  <link rel="stylesheet" href="/admin/admin.css?v=5">
 </head>
 <body>
 <section id="loginView" class="login-view">
   <form id="loginForm" class="login-card">
     <div class="login-logo">L</div>
     <h1>Editar meu site</h1>
-    <p>Um painel simples para trocar textos, fotos, vídeos e cores.</p>
+    <p>Edite cada parte do site vendo o resultado na mesma hora.</p>
     <label class="field"><span>Senha</span><input id="password" type="password" autocomplete="current-password" required autofocus placeholder="Digite sua senha"></label>
-    <button class="btn primary wide" type="submit">Entrar</button>
+    <button class="btn primary wide" type="submit">Entrar no editor</button>
     <p id="loginError" class="error-text"></p>
   </form>
 </section>
 
 <section id="appView" class="app hidden">
   <header class="topbar">
-    <div class="brand"><span class="brand-mark">L</span><div><strong>Editar site</strong><small>painel simples · versão 4</small></div></div>
+    <div class="brand"><span class="brand-mark">L</span><div><strong>Editor visual</strong><small>Lyzandra Letícia · versão 5</small></div></div>
     <div id="saveStatus" class="save-status saved"><span class="dot"></span><span>Salvo</span></div>
-    <button id="previewBtn" class="btn secondary" type="button">Ver prévia</button>
-    <button id="saveBtn" class="btn primary" type="button">Salvar</button>
+    <button id="openSiteBtn" class="btn quiet" type="button">Abrir site</button>
+    <button id="saveBtn" class="btn primary" type="button">Salvar alterações</button>
     <button id="logoutBtn" class="btn quiet" type="button">Sair</button>
   </header>
 
-  <div id="storageWarning" class="storage-warning hidden"><strong>Armazenamento não conectado.</strong><span>O painel não conseguirá salvar até o Cloudflare KV ser vinculado.</span></div>
+  <div id="storageWarning" class="storage-warning hidden"><strong>Armazenamento não conectado.</strong><span>O painel está em modo de prévia e não conseguirá salvar até o KV ser vinculado.</span></div>
 
-  <div class="editor-shell">
-    <aside class="sidebar">
-      <div class="sidebar-title"><strong>O que deseja alterar?</strong><span>Escolha uma área.</span></div>
-      <nav class="nav-list">
-        <button class="nav-item active" data-view="content" type="button"><span class="nav-icon">Aa</span><span><strong>Textos e botões</strong><small>Frases, títulos e links</small></span></button>
-        <button class="nav-item" data-view="media" type="button"><span class="nav-icon">▶</span><span><strong>Fotos e vídeos</strong><small>Enviar arquivos e trocar capas</small></span></button>
-        <button class="nav-item" data-view="theme" type="button"><span class="nav-icon">●</span><span><strong>Cores</strong><small>Escolher visualmente</small></span></button>
-        <button class="nav-item" data-view="sections" type="button"><span class="nav-icon">↕</span><span><strong>Seções</strong><small>Subir, descer ou esconder</small></span></button>
-        <button class="nav-item" data-view="seo" type="button"><span class="nav-icon">G</span><span><strong>Google</strong><small>Nome e descrição</small></span></button>
-      </nav>
+  <div class="studio">
+    <aside class="sector-sidebar">
+      <div class="sector-sidebar-head"><strong>Partes do site</strong><span>Edite uma parte por vez.</span></div>
+      <button id="generalBtn" class="sector-item general" type="button"><span class="sector-number">⚙</span><span><strong>Configurações gerais</strong><small>Cores, Google e identidade</small></span></button>
+      <div id="sectorList" class="sector-list"></div>
     </aside>
 
-    <main class="workspace">
-      <section class="view active" data-view-panel="content">
-        <div class="view-head"><span class="eyebrow">CONTEÚDO</span><h1>Textos e botões</h1><p>Abra a parte do site que deseja alterar e escreva normalmente.</p></div>
-        <label class="search-box"><span>Procurar texto</span><input id="contentSearch" type="search" placeholder="Ex.: garantia, Speed Lash, preço..."></label>
-        <div id="contentSections" class="stack"></div>
-      </section>
+    <section class="editor-pane">
+      <div class="mobile-sector-picker">
+        <label for="sectorSelect">Parte do site</label>
+        <select id="sectorSelect"></select>
+      </div>
+      <div class="editor-pane-head">
+        <span id="sectorEyebrow" class="eyebrow">SETOR</span>
+        <h1 id="sectorTitle">Carregando site…</h1>
+        <p id="sectorDescription">Os campos desta parte aparecerão aqui.</p>
+      </div>
+      <div id="sectorEditor" class="sector-editor"></div>
+    </section>
 
-      <section class="view" data-view-panel="media">
-        <div class="view-head"><span class="eyebrow">FOTOS E VÍDEOS</span><h1>Fotos e vídeos</h1><p>Os vídeos aparecem primeiro. Você pode enviar um arquivo do computador ou colar um link.</p></div>
-        <div class="tip-card"><strong>Para trocar um vídeo</strong><span>Clique em <b>Enviar vídeo</b> ou cole um link do YouTube, Vimeo ou MP4. Para vídeos grandes, prefira o link.</span></div>
-        <div id="mediaList" class="stack"></div>
-      </section>
-
-      <section class="view" data-view-panel="theme">
-        <div class="view-head"><span class="eyebrow">APARÊNCIA</span><h1>Cores</h1><p>Clique em cada quadrado de cor e escolha visualmente.</p></div>
-        <div class="card color-list">
-          <div class="color-setting"><label><strong>Cor principal</strong><small>Botões e destaques</small></label><input id="themePrimary" type="color" value="#fa4a98"></div>
-          <div class="color-setting"><label><strong>Fundo do site</strong><small>Cor predominante</small></label><input id="themeBackground" type="color" value="#0a0508"></div>
-          <div class="color-setting"><label><strong>Texto principal</strong><small>Títulos e textos fortes</small></label><input id="themeForeground" type="color" value="#fff7fb"></div>
-          <div class="color-setting"><label><strong>Cartões</strong><small>Fundos de blocos</small></label><input id="themeCard" type="color" value="#171015"></div>
-          <div class="color-setting"><label><strong>Texto secundário</strong><small>Descrições mais suaves</small></label><input id="themeMuted" type="color" value="#b7aab1"></div>
-          <button id="resetThemeBtn" class="btn secondary wide" type="button">Voltar às cores originais</button>
+    <section class="live-pane">
+      <div class="live-toolbar">
+        <div><strong>Prévia em tempo real</strong><small>Tudo que você altera aparece aqui imediatamente.</small></div>
+        <div class="preview-devices">
+          <button class="device active" data-device="desktop" type="button">Computador</button>
+          <button class="device" data-device="tablet" type="button">Tablet</button>
+          <button class="device" data-device="mobile" type="button">Celular</button>
+          <button id="reloadBtn" class="device" type="button">Atualizar</button>
         </div>
-      </section>
-
-      <section class="view" data-view-panel="sections">
-        <div class="view-head"><span class="eyebrow">ORGANIZAÇÃO</span><h1>Seções do site</h1><p>Use os botões Subir e Descer. Desative uma seção para escondê-la.</p></div>
-        <div id="sectionList" class="stack"></div>
-      </section>
-
-      <section class="view" data-view-panel="seo">
-        <div class="view-head"><span class="eyebrow">GOOGLE</span><h1>Nome e descrição</h1><p>Essas informações aparecem na aba do navegador e podem aparecer nas buscas.</p></div>
-        <div class="card">
-          <label class="field"><span>Nome do site</span><input id="siteTitle" type="text" placeholder="Speed Lash - Lyzandra Letícia"></label>
-          <label class="field"><span>Descrição curta</span><textarea id="siteDescription" rows="5" placeholder="Explique em uma frase o que a página oferece."></textarea></label>
-        </div>
-      </section>
-    </main>
+      </div>
+      <div class="live-stage"><div id="previewShell" class="preview-shell desktop"><iframe id="preview" class="preview" src="/?admin-preview=1"></iframe></div></div>
+    </section>
   </div>
 </section>
 
-<div id="previewModal" class="preview-modal hidden" role="dialog" aria-modal="true" aria-label="Prévia do site">
-  <div class="preview-modal-card">
-    <div class="preview-modal-head">
-      <div><strong>Prévia do site</strong><small>Veja como as alterações estão ficando.</small></div>
-      <div class="preview-actions">
-        <button class="device active" data-device="desktop" type="button">Computador</button>
-        <button class="device" data-device="tablet" type="button">Tablet</button>
-        <button class="device" data-device="mobile" type="button">Celular</button>
-        <button id="reloadBtn" class="btn quiet" type="button">Atualizar</button>
-        <button id="closePreviewBtn" class="btn primary" type="button">Fechar</button>
-      </div>
-    </div>
-    <div class="preview-stage"><div id="previewShell" class="preview-shell desktop"><iframe id="preview" class="preview" src="/?admin-preview=1"></iframe></div></div>
-  </div>
-</div>
-
 <div id="toast" class="toast hidden"></div>
-<script src="/admin/admin.js?v=4"></script>
+<script src="/admin/admin.js?v=5"></script>
 </body>
 </html>
