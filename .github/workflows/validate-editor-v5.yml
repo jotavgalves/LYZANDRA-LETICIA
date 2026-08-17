@@ -20,6 +20,7 @@ jobs:
         run: |
           node --check admin/admin.js
           node --check admin/identity.js
+          node --check admin/contact.js
           node --check assets/site-runtime.js
           node --check assets/identity-runtime.js
       - name: Validate PowerShell parser
@@ -36,11 +37,18 @@ jobs:
           grep -q 'Prévia em tempo real' admin/index.html
           grep -q 'Partes do site' admin/index.html
           grep -q '/admin/identity.js' admin/index.html
+          grep -q '/admin/contact.js' admin/index.html
           ! grep -Eqi 'CLASSES CSS|CSS INLINE|span-003|Ferramentas técnicas' admin/index.html
           ! grep -Eqi 'overflow-x:auto|width:max-content' admin/admin.css
           grep -q 'YouTube, Vimeo, TikTok, Instagram, Facebook' admin/admin.js
           grep -q 'Logo e identidade visual' admin/identity.js
           grep -q 'Usar a mesma logo principal no rodapé' admin/identity.js
+          grep -q 'WhatsApp e contato' admin/contact.js
+          grep -q 'Número do WhatsApp' admin/contact.js
+          grep -q 'Mensagem que já abre pronta' admin/contact.js
+          grep -q 'Botão flutuante' admin/contact.js
+          grep -q 'a-006' admin/contact.js
+          grep -q 'a-005' admin/contact.js
           grep -q 'data-identity-runtime' assets/site-runtime.js
           grep -q 'main-logo' assets/identity-runtime.js
           grep -q 'www.tiktok.com/player/v1' assets/site-runtime.js
