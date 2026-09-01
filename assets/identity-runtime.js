@@ -12,6 +12,14 @@
     footerLogo: { ...DEFAULT_IDENTITY.footerLogo, ...((value && value.footerLogo) || {}) }
   });
 
+  function ensureTestimonialsRuntime() {
+    if (document.querySelector('script[data-testimonials-runtime]')) return;
+    const script = document.createElement('script');
+    script.src = '/assets/testimonials-runtime.js?v=1';
+    script.dataset.testimonialsRuntime = '1';
+    document.head.appendChild(script);
+  }
+
   function justify(position) {
     if (position === 'left') return 'flex-start';
     if (position === 'right') return 'flex-end';
@@ -63,6 +71,7 @@
     }
   }
 
+  ensureTestimonialsRuntime();
   window.addEventListener('site-content-ready', event => applyIdentity(event.detail || window.__SITE_CONTENT__ || {}));
   if (window.__SITE_CONTENT__) applyIdentity(window.__SITE_CONTENT__);
 })();
