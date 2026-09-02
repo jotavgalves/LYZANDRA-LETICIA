@@ -18,9 +18,16 @@ class HeadInjector {
   element(head) {
     let html = '';
     if (this.publicLanding) {
-      html += '<link rel="stylesheet" href="/assets/conversion.css?v=1">';
-      html += '<script defer src="/assets/conversion-runtime.js?v=2"></script>';
-      html += '<script defer src="/assets/full-editor-runtime.js?v=1"></script>';
+      html += '<style id="ly-site-boot-style">html[data-site-booting] body{visibility:hidden}</style>';
+      html += '<script id="ly-site-boot">document.documentElement.setAttribute("data-site-booting","1");setTimeout(function(){document.documentElement.removeAttribute("data-site-booting")},2200);</script>';
+      html += '<link rel="stylesheet" href="/assets/conversion.css?v=2">';
+      html += '<script defer data-conversion-runtime="1" src="/assets/conversion-runtime.js?v=3"></script>';
+      html += '<script defer data-identity-runtime="1" src="/assets/identity-runtime.js?v=2"></script>';
+      html += '<script defer data-testimonials-runtime="1" src="/assets/testimonials-runtime.js?v=3"></script>';
+      html += '<script defer data-marketing-runtime="1" src="/assets/marketing-runtime.js?v=2"></script>';
+      html += '<script defer data-certificates-runtime="1" src="/assets/certificates-runtime.js?v=3"></script>';
+      html += '<script defer data-seo-runtime="1" src="/assets/seo-runtime.js?v=1"></script>';
+      html += '<script defer data-full-editor-runtime="1" src="/assets/full-editor-runtime.js?v=2"></script>';
       if (this.image) {
         const image = escapeAttr(this.image);
         html += `<meta property="og:image" content="${image}">`;
@@ -33,7 +40,7 @@ class HeadInjector {
         html += '<meta name="twitter:image:alt" content="Speed Lash — curso de extensão de cílios com Lyzandra Letícia">';
       }
     }
-    if (this.admin) html += '<script defer src="/admin/conversion.js?v=2"></script>';
+    if (this.admin) html += '<script defer data-conversion-admin="1" src="/admin/conversion.js?v=3"></script>';
     if (html) head.append(html, { html: true });
   }
 }
