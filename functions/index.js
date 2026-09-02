@@ -4,7 +4,7 @@ const DEFAULT_SEO = {
   siteName: 'Ly Cílios',
   title: 'Speed Lash | Curso de extensão de cílios com Lyzandra Letícia',
   description: 'Aprenda técnicas de extensão de cílios para ganhar velocidade, melhorar retenção e elevar a qualidade dos atendimentos com o método Speed Lash.',
-  canonicalUrl: '',
+  canonicalUrl: 'https://lycilios.com/',
   searchConsoleVerification: '',
   socialImage: '',
   organizationName: 'Ly Cílios',
@@ -19,7 +19,8 @@ function normalizeSeo(value = {}) {
     ...DEFAULT_SEO,
     ...raw,
     enabled: raw.enabled !== false,
-    index: raw.index !== false
+    index: raw.index !== false,
+    canonicalUrl: String(raw.canonicalUrl || DEFAULT_SEO.canonicalUrl).trim()
   };
 }
 
@@ -139,7 +140,7 @@ export async function onRequestGet(context) {
   try { data = await env.SITE_CONTENT?.get('site-content', 'json') || {}; } catch {}
 
   const seo = normalizeSeo(data?.site?.seo || {});
-  let canonical = `${url.origin}/`;
+  let canonical = DEFAULT_SEO.canonicalUrl;
   if (seo.canonicalUrl) {
     try {
       const parsed = new URL(seo.canonicalUrl);
