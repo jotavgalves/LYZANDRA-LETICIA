@@ -10,11 +10,15 @@ on:
       - 'assets/testimonials-runtime.js'
       - 'assets/marketing-runtime.js'
       - 'assets/certificates-runtime.js'
+      - 'assets/seo-runtime.js'
       - 'src/login-rate-limit.js'
       - 'functions/api/login.js'
+      - 'functions/robots.txt.js'
+      - 'functions/sitemap.xml.js'
       - 'privacidade.html'
       - 'termos.html'
       - '_headers'
+      - '_routes.json'
       - 'deploy-update.ps1'
       - 'functions/api/health.js'
       - '.github/workflows/validate-editor-v5.yml'
@@ -33,13 +37,18 @@ jobs:
           node --check admin/testimonials-fix.js
           node --check admin/marketing.js
           node --check admin/certificates.js
+          node --check admin/certificates-fit-fix.js
+          node --check admin/seo.js
           node --check assets/site-runtime.js
           node --check assets/identity-runtime.js
           node --check assets/testimonials-runtime.js
           node --check assets/marketing-runtime.js
           node --check assets/certificates-runtime.js
+          node --check assets/seo-runtime.js
           node --check src/login-rate-limit.js
           node --check functions/api/login.js
+          node --check functions/robots.txt.js
+          node --check functions/sitemap.xml.js
       - name: Validate PowerShell parser
         shell: pwsh
         run: |
@@ -51,6 +60,7 @@ jobs:
         shell: bash
         run: |
           grep -q '<meta name="editor-version" content="5">' admin/index.html
+          grep -q 'noindex,nofollow,noarchive' admin/index.html
           grep -q 'Prévia em tempo real' admin/index.html
           grep -q 'Partes do site' admin/index.html
           grep -q '/admin/identity.js' admin/index.html
@@ -58,6 +68,7 @@ jobs:
           grep -q '/admin/testimonials.js' admin/index.html
           grep -q '/admin/marketing.js' admin/index.html
           grep -q '/admin/certificates.js' admin/index.html
+          grep -q '/admin/seo.js' admin/index.html
           ! grep -Eqi 'CLASSES CSS|CSS INLINE|span-003|Ferramentas técnicas' admin/index.html
           ! grep -Eqi 'overflow-x:auto|width:max-content' admin/admin.css
           grep -q 'YouTube, Vimeo, TikTok, Instagram, Facebook' admin/admin.js
@@ -76,6 +87,9 @@ jobs:
           grep -q 'Certificado profissional' admin/certificates.js
           grep -q 'Adicionar certificado' admin/certificates.js
           grep -q 'Bloco final de autoridade' admin/certificates.js
+          grep -q 'SEO e Google' admin/seo.js
+          grep -q 'Google Search Console' admin/seo.js
+          grep -q 'Imagem de compartilhamento' admin/seo.js
           grep -q 'a-006' admin/contact.js
           grep -q 'a-005' admin/contact.js
           grep -q 'data-identity-runtime' assets/site-runtime.js
@@ -83,12 +97,17 @@ jobs:
           grep -q 'data-testimonials-runtime' assets/identity-runtime.js
           grep -q 'data-marketing-runtime' assets/identity-runtime.js
           grep -q 'data-certificates-runtime' assets/identity-runtime.js
+          grep -q 'data-seo-runtime' assets/identity-runtime.js
           grep -q 'LyzandraTestimonials' assets/testimonials-runtime.js
           grep -q 'aspect-ratio:9/16' assets/testimonials-runtime.js
           grep -q 'não há garantia de resultados específicos' assets/testimonials-runtime.js
           grep -q 'LyzandraCertificates' assets/certificates-runtime.js
           grep -q 'Certificação que valoriza sua formação' assets/certificates-runtime.js
           grep -q 'data-ly-certificates-benefits' assets/certificates-runtime.js
+          grep -q 'LyzandraSEO' assets/seo-runtime.js
+          grep -q 'google-site-verification' assets/seo-runtime.js
+          grep -q 'application/ld+json' assets/seo-runtime.js
+          grep -q "'@type': 'Course'" assets/seo-runtime.js
           grep -q 'connect.facebook.net' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtag/js' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtm.js' assets/marketing-runtime.js
@@ -107,6 +126,12 @@ jobs:
           grep -q '429' functions/api/login.js
           grep -q 'Retry-After' functions/api/login.js
           grep -q 'registerLoginFailure' functions/api/login.js
+          grep -q 'Sitemap:' functions/robots.txt.js
+          grep -q 'Disallow: /admin/' functions/robots.txt.js
+          grep -q '<urlset' functions/sitemap.xml.js
+          grep -q '/robots.txt' _routes.json
+          grep -q '/sitemap.xml' _routes.json
+          grep -q 'X-Robots-Tag: noindex' _headers
           test -f privacidade.html
           test -f termos.html
           grep -q 'Política de Privacidade' privacidade.html
