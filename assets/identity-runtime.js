@@ -21,7 +21,7 @@
   }
 
   function ensureTestimonialsRuntime() {
-    ensureRuntime('script[data-testimonials-runtime]', '/assets/testimonials-runtime.js?v=2', 'testimonialsRuntime');
+    ensureRuntime('script[data-testimonials-runtime]', '/assets/testimonials-runtime.js?v=3', 'testimonialsRuntime');
   }
 
   function ensureMarketingRuntime() {
