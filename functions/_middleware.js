@@ -8,24 +8,32 @@ function escapeAttr(value) {
     .replace(/>/g, '&gt;');
 }
 
-class DefaultOgHandler {
-  constructor(image) {
+class HeadInjector {
+  constructor({ image = '', publicLanding = false, admin = false }) {
     this.image = image;
+    this.publicLanding = publicLanding;
+    this.admin = admin;
   }
 
   element(head) {
-    const image = escapeAttr(this.image);
-    head.append(
-      `<meta property="og:image" content="${image}">` +
-      `<meta property="og:image:secure_url" content="${image}">` +
-      `<meta property="og:image:type" content="image/jpeg">` +
-      `<meta property="og:image:width" content="1200">` +
-      `<meta property="og:image:height" content="630">` +
-      `<meta property="og:image:alt" content="Speed Lash — curso de extensão de cílios com Lyzandra Letícia">` +
-      `<meta name="twitter:image" content="${image}">` +
-      `<meta name="twitter:image:alt" content="Speed Lash — curso de extensão de cílios com Lyzandra Letícia">`,
-      { html: true }
-    );
+    let html = '';
+    if (this.publicLanding) {
+      html += '<link rel="stylesheet" href="/assets/conversion.css?v=1">';
+      html += '<script defer src="/assets/conversion-runtime.js?v=1"></script>';
+      if (this.image) {
+        const image = escapeAttr(this.image);
+        html += `<meta property="og:image" content="${image}">`;
+        html += `<meta property="og:image:secure_url" content="${image}">`;
+        html += '<meta property="og:image:type" content="image/jpeg">';
+        html += '<meta property="og:image:width" content="1200">';
+        html += '<meta property="og:image:height" content="630">';
+        html += '<meta property="og:image:alt" content="Speed Lash — curso de extensão de cílios com Lyzandra Letícia">';
+        html += `<meta name="twitter:image" content="${image}">`;
+        html += '<meta name="twitter:image:alt" content="Speed Lash — curso de extensão de cílios com Lyzandra Letícia">';
+      }
+    }
+    if (this.admin) html += '<script defer src="/admin/conversion.js?v=1"></script>';
+    if (html) head.append(html, { html: true });
   }
 }
 
@@ -40,18 +48,22 @@ export async function onRequest(context) {
   const type = response.headers.get('content-type') || '';
   if (!type.includes('text/html')) return response;
 
+  const url = new URL(context.request.url);
+  const publicLanding = url.pathname === '/' || url.pathname === '/index.html';
+  const admin = url.pathname === '/admin' || url.pathname.startsWith('/admin/');
+
   let configuredImage = '';
-  try {
-    const data = await context.env.SITE_CONTENT?.get('site-content', 'json');
-    configuredImage = String(data?.site?.seo?.socialImage || '').trim();
-  } catch {}
+  if (publicLanding) {
+    try {
+      const data = await context.env.SITE_CONTENT?.get('site-content', 'json');
+      configuredImage = String(data?.site?.seo?.socialImage || '').trim();
+    } catch {}
+  }
 
-  if (configuredImage) return response;
-
-  const rewritten = new HTMLRewriter()
-    .on('meta[name="twitter:card"]', new TwitterCardHandler())
-    .on('head', new DefaultOgHandler(DEFAULT_OG_IMAGE))
-    .transform(response);
+  const fallbackImage = publicLanding && !configuredImage ? DEFAULT_OG_IMAGE : '';
+  let rewriter = new HTMLRewriter().on('head', new HeadInjector({ image: fallbackImage, publicLanding, admin }));
+  if (fallbackImage) rewriter = rewriter.on('meta[name="twitter:card"]', new TwitterCardHandler());
+  const rewritten = rewriter.transform(response);
 
   return new Response(rewritten.body, {
     status: rewritten.status,
