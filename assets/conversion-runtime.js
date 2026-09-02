@@ -102,7 +102,8 @@
       acceptNode(node) {
         const parent = node.parentElement;
         if (!parent || /^(SCRIPT|STYLE|NOSCRIPT)$/.test(parent.tagName)) return NodeFilter.FILTER_REJECT;
-        return replacements.some(([pattern]) => pattern.test(node.nodeValue || '')) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        const text = node.nodeValue || '';
+        return (text.includes('Start Lashes') || text.includes('JK Academy') || text.includes('Jamily')) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
       }
     });
     const nodes = [];
