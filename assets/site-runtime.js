@@ -76,7 +76,7 @@
 
     if (!qs('script[data-identity-runtime]')) {
       const identityRuntime = document.createElement('script');
-      identityRuntime.src = '/assets/identity-runtime.js?v=1';
+      identityRuntime.src = '/assets/identity-runtime.js?v=2';
       identityRuntime.dataset.identityRuntime = '1';
       document.head.appendChild(identityRuntime);
     }
@@ -293,18 +293,25 @@
 
   async function loadContent() {
     let data = DEFAULT;
-    try {
-      const response = await fetch('/api/content', { cache: 'no-store' });
-      if (response.ok) data = mergeData(await response.json());
-    } catch {}
+    if (window.__SITE_CONTENT__ && typeof window.__SITE_CONTENT__ === 'object') {
+      data = mergeData(window.__SITE_CONTENT__);
+    } else {
+      try {
+        const response = await fetch('/api/content', { cache: 'no-store' });
+        if (response.ok) data = mergeData(await response.json());
+      } catch {}
+    }
 
     window.__SITE_CONTENT__ = data;
-    Object.entries(data.patches || {}).forEach(([id, patch]) => {
-      applyPatch(qs(`[data-edit-id="${CSS.escape(id)}"]`), patch);
-    });
+    if (!window.__SITE_CONTENT_SERVER_APPLIED__) {
+      Object.entries(data.patches || {}).forEach(([id, patch]) => {
+        applyPatch(qs(`[data-edit-id="${CSS.escape(id)}"]`), patch);
+      });
+    }
     applyOrder(data.sectionOrder);
     applySite(data.site);
     applyVideos(data.videos);
+    window.__SITE_CONTENT_READY__ = true;
     window.dispatchEvent(new CustomEvent('site-content-ready', { detail: data }));
     return data;
   }
@@ -347,9 +354,18 @@
     });
   }
 
+  function revealSite() {
+    requestAnimationFrame(() => {
+      document.documentElement.removeAttribute('data-site-booting');
+      window.__SITE_BOOT_COMPLETE__ = true;
+      window.dispatchEvent(new CustomEvent('site-render-ready'));
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     await loadContent();
     initFaq();
     initCarousel();
+    revealSite();
   });
 })();
