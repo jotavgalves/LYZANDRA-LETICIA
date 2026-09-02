@@ -12,12 +12,20 @@
     footerLogo: { ...DEFAULT_IDENTITY.footerLogo, ...((value && value.footerLogo) || {}) }
   });
 
-  function ensureTestimonialsRuntime() {
-    if (document.querySelector('script[data-testimonials-runtime]')) return;
+  function ensureRuntime(selector, src, datasetKey) {
+    if (document.querySelector(selector)) return;
     const script = document.createElement('script');
-    script.src = '/assets/testimonials-runtime.js?v=1';
-    script.dataset.testimonialsRuntime = '1';
+    script.src = src;
+    script.dataset[datasetKey] = '1';
     document.head.appendChild(script);
+  }
+
+  function ensureTestimonialsRuntime() {
+    ensureRuntime('script[data-testimonials-runtime]', '/assets/testimonials-runtime.js?v=2', 'testimonialsRuntime');
+  }
+
+  function ensureMarketingRuntime() {
+    ensureRuntime('script[data-marketing-runtime]', '/assets/marketing-runtime.js?v=1', 'marketingRuntime');
   }
 
   function justify(position) {
@@ -72,6 +80,7 @@
   }
 
   ensureTestimonialsRuntime();
+  ensureMarketingRuntime();
   window.addEventListener('site-content-ready', event => applyIdentity(event.detail || window.__SITE_CONTENT__ || {}));
   if (window.__SITE_CONTENT__) applyIdentity(window.__SITE_CONTENT__);
 })();
