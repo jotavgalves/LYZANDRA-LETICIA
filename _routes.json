@@ -5,6 +5,7 @@
     "/index.html",
     "/api/*",
     "/media/*",
+    "/og-image.jpg",
     "/robots.txt",
     "/sitemap.xml"
   ],
