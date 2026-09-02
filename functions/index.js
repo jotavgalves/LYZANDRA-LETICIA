@@ -38,7 +38,7 @@ function escapeAttr(value) {
 }
 
 function safeJson(value) {
-  return JSON.stringify(value).replace(/</g, '\\u003c');
+  return JSON.stringify(value ?? {}).replace(/</g, '\\u003c');
 }
 
 function graphFor(seo, data, canonical, requestOrigin) {
@@ -80,16 +80,17 @@ function graphFor(seo, data, canonical, requestOrigin) {
 }
 
 class HeadHandler {
-  constructor({ seo, data, canonical, requestOrigin, preview }) {
+  constructor({ seo, data, fullEditor, canonical, requestOrigin, preview }) {
     this.seo = seo;
     this.data = data;
+    this.fullEditor = fullEditor;
     this.canonical = canonical;
     this.requestOrigin = requestOrigin;
     this.preview = preview;
   }
 
   element(head) {
-    const { seo, data, canonical, requestOrigin, preview } = this;
+    const { seo, data, fullEditor, canonical, requestOrigin, preview } = this;
     const title = seo.title || data?.site?.title || DEFAULT_SEO.title;
     const description = seo.description || data?.site?.description || DEFAULT_SEO.description;
     const socialImage = absolute(seo.socialImage, requestOrigin);
@@ -98,6 +99,7 @@ class HeadHandler {
       : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
 
     let html = '';
+    html += `<script id="ly-preloaded-state">window.__SITE_CONTENT__=${safeJson(data)};window.__SITE_CONTENT_SERVER_APPLIED__=true;window.__FULL_EDITOR_PATCHES__=${safeJson(fullEditor?.patches || {})};</script>`;
     html += `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`;
     html += `<link rel="canonical" href="${escapeAttr(canonical)}">`;
     html += `<meta name="robots" content="${escapeAttr(robots)}">`;
@@ -133,6 +135,29 @@ class DescriptionHandler {
   element(el) { el.setAttribute('content', this.description); }
 }
 
+class LegacyPatchHandler {
+  constructor(patches = {}) { this.patches = patches && typeof patches === 'object' ? patches : {}; }
+  element(el) {
+    const id = el.getAttribute('data-edit-id');
+    const patch = id ? this.patches[id] : null;
+    if (!patch || typeof patch !== 'object') return;
+
+    if (typeof patch.className === 'string') el.setAttribute('class', patch.className);
+    if (typeof patch.styleText === 'string') el.setAttribute('style', patch.styleText);
+    if (patch.attrs && typeof patch.attrs === 'object') {
+      Object.entries(patch.attrs).forEach(([name, value]) => {
+        if (value === null || value === undefined || value === '') el.removeAttribute(name);
+        else el.setAttribute(name, String(value));
+      });
+    }
+    if (patch.hidden === true) el.setAttribute('data-editor-hidden', 'true');
+    else if (patch.hidden === false) el.removeAttribute('data-editor-hidden');
+
+    if (typeof patch.html === 'string') el.setInnerContent(patch.html, { html: true });
+    else if (typeof patch.text === 'string') el.setInnerContent(patch.text);
+  }
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -150,7 +175,17 @@ export async function onRequestGet(context) {
   }
 
   let data = {};
-  try { data = await env.SITE_CONTENT?.get('site-content', 'json') || {}; } catch {}
+  let fullEditor = { version: 1, patches: {} };
+  if (env.SITE_CONTENT) {
+    try {
+      const [siteValue, fullValue] = await Promise.all([
+        env.SITE_CONTENT.get('site-content', 'json'),
+        env.SITE_CONTENT.get('site-full-editor', 'json')
+      ]);
+      data = siteValue || {};
+      if (fullValue && typeof fullValue === 'object') fullEditor = fullValue;
+    } catch {}
+  }
 
   const seo = normalizeSeo(data?.site?.seo || {});
   let canonical = DEFAULT_SEO.canonicalUrl;
@@ -172,7 +207,8 @@ export async function onRequestGet(context) {
   const rewritten = new HTMLRewriter()
     .on('title', new TitleHandler(title))
     .on('meta[name="description"]', new DescriptionHandler(description))
-    .on('head', new HeadHandler({ seo, data, canonical, requestOrigin: url.origin, preview }))
+    .on('[data-edit-id]', new LegacyPatchHandler(data?.patches || {}))
+    .on('head', new HeadHandler({ seo, data, fullEditor, canonical, requestOrigin: url.origin, preview }))
     .transform(response);
 
   const headers = new Headers(rewritten.headers);
