@@ -71,7 +71,7 @@ jobs:
           grep -q 'data-marketing-runtime' assets/identity-runtime.js
           grep -q 'LyzandraTestimonials' assets/testimonials-runtime.js
           grep -q 'aspect-ratio:9/16' assets/testimonials-runtime.js
-          grep -q 'facebook.com' assets/marketing-runtime.js
+          grep -q 'connect.facebook.net' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtag/js' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtm.js' assets/marketing-runtime.js
           grep -q 'ad_user_data' assets/marketing-runtime.js
