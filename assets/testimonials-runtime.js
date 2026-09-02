@@ -115,12 +115,24 @@
     return article;
   }
 
+  function ensureDisclaimer(section) {
+    if (!section || section.querySelector('[data-testimonial-results-disclaimer]')) return;
+    const host = section.querySelector('.mx-auto') || section.firstElementChild || section;
+    const disclaimer = document.createElement('p');
+    disclaimer.dataset.testimonialResultsDisclaimer = '1';
+    disclaimer.textContent = 'Depoimentos representam experiências individuais. Resultados de tempo, retenção e faturamento variam conforme experiência, prática, materiais, condições de atendimento e execução; não há garantia de resultados específicos.';
+    disclaimer.style.cssText = 'max-width:760px;margin:14px auto 0;padding:0 14px;text-align:center;font-size:10px;line-height:1.55;color:rgba(255,255,255,.48);';
+    host.appendChild(disclaimer);
+  }
+
   function apply(data) {
+    const section = document.querySelector('section[data-edit-id="section-002"]');
+    if (!section) return;
+    ensureDisclaimer(section);
+
     const raw = data?.site?.testimonials;
     if (!raw || !Array.isArray(raw.items)) return;
     const config = mergeConfig(raw);
-    const section = document.querySelector('section[data-edit-id="section-002"]');
-    if (!section) return;
     section.style.display = config.enabled === false ? 'none' : '';
     if (config.enabled === false) return;
 
@@ -133,4 +145,6 @@
   window.LyzandraTestimonials = { apply, mergeConfig };
   window.addEventListener('site-content-ready', event => apply(event.detail || window.__SITE_CONTENT__ || {}));
   if (window.__SITE_CONTENT__) apply(window.__SITE_CONTENT__);
+  else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => ensureDisclaimer(document.querySelector('section[data-edit-id="section-002"]')));
+  else ensureDisclaimer(document.querySelector('section[data-edit-id="section-002"]'));
 })();
