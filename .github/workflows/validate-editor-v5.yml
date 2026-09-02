@@ -9,6 +9,8 @@ on:
       - 'assets/identity-runtime.js'
       - 'assets/testimonials-runtime.js'
       - 'assets/marketing-runtime.js'
+      - 'privacidade.html'
+      - 'termos.html'
       - '_headers'
       - 'deploy-update.ps1'
       - 'functions/api/health.js'
@@ -61,7 +63,7 @@ jobs:
           grep -q 'Imagem ou print do depoimento' admin/testimonials.js
           grep -q 'Story 9:16' admin/testimonials-fix.js
           grep -q 'Marketing, Pixel e Ads' admin/marketing.js
-          grep -q 'Google Ads' admin/marketing.js
+          grep -q 'Checkout externo' admin/marketing.js
           grep -q 'Meta Pixel ID' admin/marketing.js
           grep -q 'a-006' admin/contact.js
           grep -q 'a-005' admin/contact.js
@@ -76,5 +78,15 @@ jobs:
           grep -q 'googletagmanager.com/gtm.js' assets/marketing-runtime.js
           grep -q 'ad_user_data' assets/marketing-runtime.js
           grep -q 'ad_personalization' assets/marketing-runtime.js
+          grep -q 'checkout_click' assets/marketing-runtime.js
+          grep -q 'utm_campaign' assets/marketing-runtime.js
+          grep -q 'gclid' assets/marketing-runtime.js
+          grep -q 'Gerenciar cookies' assets/marketing-runtime.js
+          ! grep -q "metaStandardEvent('InitiateCheckout'" assets/marketing-runtime.js
+          ! grep -q "pushEvent('begin_checkout'" assets/marketing-runtime.js
+          test -f privacidade.html
+          test -f termos.html
+          grep -q 'Política de Privacidade' privacidade.html
+          grep -q 'Termos de Uso' termos.html
           grep -q 'www.tiktok.com/player/v1' assets/site-runtime.js
           grep -q 'quality=1080p&max_quality=4k' assets/site-runtime.js
