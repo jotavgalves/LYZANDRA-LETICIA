@@ -1,0 +1,92 @@
+name: Internalize legacy assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - internalize-assets.trigger
+
+permissions:
+  contents: write
+
+jobs:
+  internalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download visual assets from legacy deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p images assets
+          curl -fsSL --retry 3 --retry-delay 2 'https://lycilios.vercel.app/images/hero-video.png' -o images/hero-video.png
+          curl -fsSL --retry 3 --retry-delay 2 'https://lycilios.vercel.app/images/tec-mega.png' -o images/tec-mega.png
+          curl -fsSL --retry 3 --retry-delay 2 'https://lycilios.vercel.app/images/tec-volume-brasileiro.png' -o images/tec-volume-brasileiro.png
+          curl -fsSL --retry 3 --retry-delay 2 'https://lycilios.vercel.app/images/tec-molhado.png' -o images/tec-molhado.png
+          curl -fsSL --retry 3 --retry-delay 2 'https://lycilios.vercel.app/images/certificate.png' -o images/certificate.png
+          curl -fsSL --retry 3 --retry-delay 2 'https://lycilios.vercel.app/images/jamily.png' -o images/lyzandra.png
+          curl -fsSL --retry 3 --retry-delay 2 'https://lycilios.vercel.app/_next/static/chunks/028f974khuefk.css' -o assets/original.css
+
+      - name: Point the landing to local assets and refine legacy copy
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          replacements = {
+            'https://lycilios.vercel.app/_next/static/chunks/028f974khuefk.css': '/assets/original.css',
+            'https://lycilios.vercel.app/images/hero-video.png': '/images/hero-video.png',
+            'https://lycilios.vercel.app/images/tec-mega.png': '/images/tec-mega.png',
+            'https://lycilios.vercel.app/images/tec-volume-brasileiro.png': '/images/tec-volume-brasileiro.png',
+            'https://lycilios.vercel.app/images/tec-molhado.png': '/images/tec-molhado.png',
+            'https://lycilios.vercel.app/images/certificate.png': '/images/certificate.png',
+            'https://lycilios.vercel.app/images/jamily.png': '/images/lyzandra.png',
+            'Start Lashes': 'Speed Lash',
+            'JK Academy': 'Ly Cílios',
+            'Jamily': 'Lyzandra',
+            'Cílios perfeitos em 60 minutos: acelere sua aplicação e surpreenda suas clientes com durabilidade de até 40 dias!': 'Aprenda um método desenvolvido para otimizar sua aplicação de cílios, trabalhar com mais agilidade e elevar a qualidade dos seus atendimentos.',
+            'Entregue uma extensão de cílios completa em 1 hora, encantando suas clientes e garantindo que voltem sempre. No Speed Lash, aprenda técnicas avançadas para agilizar a aplicação com qualidade.': 'Desenvolva um processo de aplicação mais ágil, organizado e consistente, sem abrir mão da técnica e da qualidade do acabamento.',
+            'Um passo a passo completo, do preparo à finalização, para você aplicar cílios completos em 60 minutos com qualidade profissional.': 'Um passo a passo completo, do preparo à finalização, para organizar sua aplicação com mais eficiência e qualidade profissional.',
+            'Com essas técnicas você entrega mais rápido, com maior durabilidade e fideliza suas clientes.': 'Com essas técnicas, você amplia seu repertório e desenvolve um atendimento mais eficiente e consistente.',
+            'Aplicação em 60 minutos': 'Processo de aplicação mais ágil',
+            'Aplique cílios completos em 1 hora, sem comprometer a qualidade do resultado.': 'Aprenda a organizar etapas, movimentos e técnica para reduzir desperdícios de tempo sem comprometer a qualidade.',
+            'Durabilidade de até 40 dias': 'Foco em retenção e durabilidade',
+            'Ofereça cílios que duram mais, garantindo a fidelidade das suas clientes.': 'Aprimore preparo, adesão e técnica para buscar maior retenção de acordo com cada cliente e condição de atendimento.',
+            'Mais faturamento': 'Mais eficiência na agenda',
+            'Aumente sua renda com mais agilidade nos atendimentos e resultados impecáveis.': 'Com mais eficiência no atendimento, você pode aproveitar melhor sua agenda e sua capacidade de atendimento.',
+            'Um investimento único para acelerar seus atendimentos, fidelizar clientes e aumentar seu faturamento.': 'Um investimento único para aprimorar sua técnica, otimizar atendimentos e fortalecer sua atuação profissional.',
+            'Aplicação em 60 minutos com durabilidade de até 40 dias': 'Método focado em agilidade de aplicação, retenção e qualidade'
+          }
+          for old, new in replacements.items():
+            text = text.replace(old, new)
+          p.write_text(text, encoding='utf-8')
+
+      - name: Verify local copies
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s assets/original.css
+          test -s images/hero-video.png
+          test -s images/tec-mega.png
+          test -s images/tec-volume-brasileiro.png
+          test -s images/tec-molhado.png
+          test -s images/certificate.png
+          test -s images/lyzandra.png
+          ! grep -q 'lycilios.vercel.app' index.html
+
+      - name: Commit internalized assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html assets/original.css images/
+          if git diff --cached --quiet; then
+            echo 'Nothing to commit.'
+            exit 0
+          fi
+          git commit -m 'perf: internalize legacy visual assets and refine conversion copy'
+          git push
