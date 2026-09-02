@@ -1,5 +1,12 @@
 /admin/*
   Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/privacidade.html
+  X-Robots-Tag: noindex, follow
+
+/termos.html
+  X-Robots-Tag: noindex, follow
 
 /assets/clone.css
   Cache-Control: no-cache, must-revalidate
@@ -14,4 +21,7 @@
   Cache-Control: no-cache, must-revalidate
 
 /assets/certificates-runtime.js
+  Cache-Control: no-cache, must-revalidate
+
+/assets/seo-runtime.js
   Cache-Control: no-cache, must-revalidate
