@@ -246,12 +246,11 @@
 
     card.appendChild(checkbox('Ativar configuração SEO', seo.enabled !== false, value => { seo.enabled = value; changed(); }));
     card.appendChild(checkbox('Permitir indexação no Google', seo.index !== false, value => { seo.index = value; changed(); }));
-
     card.appendChild(field('Nome do site / marca', textInput(seo.siteName, 'Ly Cílios', value => { seo.siteName = value; changed(); })));
     card.appendChild(countField('Título SEO', seo.title, '50–60', value => { seo.title = value; changed(); }));
     card.appendChild(countField('Meta description', seo.description, '140–160', value => { seo.description = value; changed(); }, true));
     card.appendChild(field('URL canônica', textInput(seo.canonicalUrl, 'Ex.: https://www.seudominio.com/', value => { seo.canonicalUrl = value.trim(); changed(); }), 'Pode deixar vazio: o site usa automaticamente o domínio em que estiver publicado. Ao usar domínio próprio, prefira informar a URL final aqui.'));
-    card.appendChild(field('Código do Google Search Console', textInput(seo.searchConsoleVerification, 'Cole somente o código content="..."', value => { seo.searchConsoleVerification = value.trim(); changed(); }), 'No Search Console, escolha verificação por tag HTML e cole aqui somente o valor de content.'));
+    card.appendChild(field('Código do Google Search Console', textInput(seo.searchConsoleVerification, 'Cole somente o código content="..."', value => { seo.searchConsoleVerification = value.trim(); changed(); }), 'Campo de apoio para a tag de verificação. Para propriedade de domínio, prefira a verificação por DNS no Search Console.'));
     card.appendChild(field('Imagem de compartilhamento', socialImageControl(), 'Recomendado: 1200 × 630 px. Usada em Open Graph e cartões sociais.'));
 
     const structured = document.createElement('div');
@@ -278,13 +277,11 @@
     timer = setTimeout(() => renderCard(force), 70);
   }
 
-  async function persist() {
+  async function persist(force = false) {
     if (!loaded) await ensureLoaded();
-    if (!dirty) return;
+    if (!dirty && !force) return;
     const content = await api('/api/content');
     content.site = { ...(content.site || {}), seo: clone(seo) };
-    if (seo.title) content.site.title = seo.title;
-    if (seo.description) content.site.description = seo.description;
     await api('/api/content', { method: 'PUT', body: JSON.stringify(content) });
     dirty = false;
   }
@@ -292,10 +289,9 @@
   const originalSave = saveBtn.onclick;
   saveBtn.onclick = async function(event) {
     if (typeof originalSave === 'function') await originalSave.call(this, event);
-    if (!dirty) return;
     try {
       this.disabled = true;
-      await persist();
+      await persist(true);
       const status = document.querySelector('#saveStatus');
       if (status) {
         status.classList.remove('dirty');
@@ -303,7 +299,7 @@
         const text = status.querySelector('span:last-child');
         if (text) text.textContent = 'Salvo';
       }
-      toast('Configurações de SEO salvas.');
+      if (dirty) toast('Configurações de SEO salvas.');
     } catch (error) {
       toast(error.message);
     } finally {
@@ -312,8 +308,8 @@
   };
 
   window.addEventListener('keydown', event => {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && dirty) {
-      setTimeout(() => persist().catch(error => toast(error.message)), 2600);
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+      setTimeout(() => persist(true).catch(error => toast(error.message)), 2700);
     }
   });
 
