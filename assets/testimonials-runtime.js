@@ -1,6 +1,10 @@
 (() => {
   const DEFAULTS = { enabled: true, items: [] };
 
+  function cleanLegacyText(value) {
+    return String(value || '').replace(/\bJamily\b/g, 'Lyzandra').replace(/Start Lashes/g, 'Speed Lash').replace(/JK Academy/g, 'Ly Cílios');
+  }
+
   function mergeConfig(value) {
     const raw = value && typeof value === 'object' ? value : {};
     return {
@@ -12,7 +16,7 @@
         avatar: String(item?.avatar || ''),
         mode: ['text', 'image', 'image-text'].includes(item?.mode) ? item.mode : 'text',
         image: String(item?.image || ''),
-        text: String(item?.text || ''),
+        text: cleanLegacyText(item?.text || ''),
         time: String(item?.time || ''),
         fit: item?.fit === 'contain' ? 'contain' : 'cover',
         position: ['top', 'center', 'bottom'].includes(item?.position) ? item.position : 'center',
@@ -72,7 +76,7 @@
     bubble.className = 'rounded-xl rounded-tl-sm bg-white p-3 shadow-sm';
     const text = document.createElement('p');
     text.className = 'text-sm leading-relaxed text-neutral-700';
-    text.textContent = item.text || '';
+    text.textContent = cleanLegacyText(item.text || '');
     bubble.appendChild(text);
     if (item.time) {
       const time = document.createElement('span');
@@ -91,10 +95,17 @@
 
     const header = document.createElement('div');
     header.className = 'flex items-center gap-3';
+    const identity = document.createElement('span');
+    identity.style.cssText = 'display:grid;gap:1px;';
     const name = document.createElement('span');
     name.className = 'font-semibold text-neutral-800';
     name.textContent = item.name || 'Aluna';
-    header.append(makeAvatar(item), name);
+    const role = document.createElement('small');
+    role.dataset.speedLashRole = '1';
+    role.textContent = 'Aluna Speed Lash';
+    role.style.cssText = 'font-size:9px;line-height:1.2;color:#8b7f84;font-weight:500;letter-spacing:.02em;';
+    identity.append(name, role);
+    header.append(makeAvatar(item), identity);
     article.appendChild(header);
 
     const body = document.createElement('div');
