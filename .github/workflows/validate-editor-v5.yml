@@ -8,6 +8,8 @@ on:
       - 'assets/site-runtime.js'
       - 'assets/identity-runtime.js'
       - 'assets/testimonials-runtime.js'
+      - 'assets/marketing-runtime.js'
+      - '_headers'
       - 'deploy-update.ps1'
       - 'functions/api/health.js'
       - '.github/workflows/validate-editor-v5.yml'
@@ -23,9 +25,12 @@ jobs:
           node --check admin/identity.js
           node --check admin/contact.js
           node --check admin/testimonials.js
+          node --check admin/testimonials-fix.js
+          node --check admin/marketing.js
           node --check assets/site-runtime.js
           node --check assets/identity-runtime.js
           node --check assets/testimonials-runtime.js
+          node --check assets/marketing-runtime.js
       - name: Validate PowerShell parser
         shell: pwsh
         run: |
@@ -42,6 +47,7 @@ jobs:
           grep -q '/admin/identity.js' admin/index.html
           grep -q '/admin/contact.js' admin/index.html
           grep -q '/admin/testimonials.js' admin/index.html
+          grep -q '/admin/marketing.js' admin/index.html
           ! grep -Eqi 'CLASSES CSS|CSS INLINE|span-003|Ferramentas técnicas' admin/index.html
           ! grep -Eqi 'overflow-x:auto|width:max-content' admin/admin.css
           grep -q 'YouTube, Vimeo, TikTok, Instagram, Facebook' admin/admin.js
@@ -53,11 +59,22 @@ jobs:
           grep -q 'Botão flutuante' admin/contact.js
           grep -q 'Depoimentos das alunas' admin/testimonials.js
           grep -q 'Imagem ou print do depoimento' admin/testimonials.js
+          grep -q 'Story 9:16' admin/testimonials-fix.js
+          grep -q 'Marketing, Pixel e Ads' admin/marketing.js
+          grep -q 'Google Ads' admin/marketing.js
+          grep -q 'Meta Pixel ID' admin/marketing.js
           grep -q 'a-006' admin/contact.js
           grep -q 'a-005' admin/contact.js
           grep -q 'data-identity-runtime' assets/site-runtime.js
           grep -q 'main-logo' assets/identity-runtime.js
           grep -q 'data-testimonials-runtime' assets/identity-runtime.js
+          grep -q 'data-marketing-runtime' assets/identity-runtime.js
           grep -q 'LyzandraTestimonials' assets/testimonials-runtime.js
+          grep -q 'aspect-ratio:9/16' assets/testimonials-runtime.js
+          grep -q 'facebook.com' assets/marketing-runtime.js
+          grep -q 'googletagmanager.com/gtag/js' assets/marketing-runtime.js
+          grep -q 'googletagmanager.com/gtm.js' assets/marketing-runtime.js
+          grep -q 'ad_user_data' assets/marketing-runtime.js
+          grep -q 'ad_personalization' assets/marketing-runtime.js
           grep -q 'www.tiktok.com/player/v1' assets/site-runtime.js
           grep -q 'quality=1080p&max_quality=4k' assets/site-runtime.js
