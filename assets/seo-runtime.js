@@ -176,13 +176,14 @@
       remove('meta[name="google-site-verification"]');
     }
 
-    let jsonLd = document.head.querySelector('#ly-seo-structured-data');
+    let jsonLd = document.head.querySelector('#ly-seo-structured-data, #ly-seo-structured-data-server');
     if (!jsonLd) {
       jsonLd = document.createElement('script');
       jsonLd.type = 'application/ld+json';
-      jsonLd.id = 'ly-seo-structured-data';
       document.head.appendChild(jsonLd);
     }
+    jsonLd.id = 'ly-seo-structured-data';
+    jsonLd.type = 'application/ld+json';
     jsonLd.textContent = JSON.stringify(buildJsonLd(config, data, canonical));
   }
 
