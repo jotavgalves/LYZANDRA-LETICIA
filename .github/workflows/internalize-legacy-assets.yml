@@ -89,4 +89,5 @@ jobs:
             exit 0
           fi
           git commit -m 'perf: internalize legacy visual assets and refine conversion copy'
-          git push
+          git pull --rebase origin main
+          git push origin main
