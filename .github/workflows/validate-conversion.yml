@@ -6,9 +6,11 @@ on:
     paths:
       - assets/conversion-runtime.js
       - assets/conversion.css
+      - assets/original.css
       - admin/conversion.js
       - assets/testimonials-runtime.js
       - functions/_middleware.js
+      - images/**
       - index.html
       - .github/workflows/validate-conversion.yml
 
@@ -26,7 +28,7 @@ jobs:
           node --check admin/conversion.js
           node --check assets/testimonials-runtime.js
           node --check functions/_middleware.js
-      - name: Validate integration markers
+      - name: Validate conversion integration
         shell: bash
         run: |
           grep -q 'conversion-runtime.js' functions/_middleware.js
@@ -34,3 +36,15 @@ jobs:
           grep -q 'conversion-sticky-cta' assets/conversion.css
           grep -q 'TUDO O QUE VOCÊ RECEBE' assets/conversion-runtime.js
           grep -q 'Aluna Speed Lash' assets/testimonials-runtime.js
+          grep -q "text.includes('Jamily')" assets/conversion-runtime.js
+      - name: Validate local optimized assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s assets/original.css
+          ! grep -q '@font-face' assets/original.css
+          ! grep -q 'lycilios.vercel.app' index.html
+          for file in hero-video tec-mega tec-volume-brasileiro tec-molhado certificate lyzandra; do
+            test -s "images/$file.webp"
+          done
+          grep -q '/images/hero-video.webp' index.html
