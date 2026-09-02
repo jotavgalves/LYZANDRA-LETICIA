@@ -4,5 +4,11 @@
 /assets/clone.css
   Cache-Control: no-cache, must-revalidate
 
+/assets/identity-runtime.js
+  Cache-Control: no-cache, must-revalidate
+
 /assets/testimonials-runtime.js
+  Cache-Control: no-cache, must-revalidate
+
+/assets/marketing-runtime.js
   Cache-Control: no-cache, must-revalidate
