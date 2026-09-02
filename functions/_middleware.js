@@ -19,7 +19,8 @@ class HeadInjector {
     let html = '';
     if (this.publicLanding) {
       html += '<link rel="stylesheet" href="/assets/conversion.css?v=1">';
-      html += '<script defer src="/assets/conversion-runtime.js?v=1"></script>';
+      html += '<script defer src="/assets/conversion-runtime.js?v=2"></script>';
+      html += '<script defer src="/assets/full-editor-runtime.js?v=1"></script>';
       if (this.image) {
         const image = escapeAttr(this.image);
         html += `<meta property="og:image" content="${image}">`;
@@ -32,7 +33,7 @@ class HeadInjector {
         html += '<meta name="twitter:image:alt" content="Speed Lash — curso de extensão de cílios com Lyzandra Letícia">';
       }
     }
-    if (this.admin) html += '<script defer src="/admin/conversion.js?v=1"></script>';
+    if (this.admin) html += '<script defer src="/admin/conversion.js?v=2"></script>';
     if (html) head.append(html, { html: true });
   }
 }
