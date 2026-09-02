@@ -9,6 +9,8 @@ on:
       - 'assets/identity-runtime.js'
       - 'assets/testimonials-runtime.js'
       - 'assets/marketing-runtime.js'
+      - 'src/login-rate-limit.js'
+      - 'functions/api/login.js'
       - 'privacidade.html'
       - 'termos.html'
       - '_headers'
@@ -33,6 +35,8 @@ jobs:
           node --check assets/identity-runtime.js
           node --check assets/testimonials-runtime.js
           node --check assets/marketing-runtime.js
+          node --check src/login-rate-limit.js
+          node --check functions/api/login.js
       - name: Validate PowerShell parser
         shell: pwsh
         run: |
@@ -85,6 +89,13 @@ jobs:
           grep -q 'Gerenciar cookies' assets/marketing-runtime.js
           ! grep -q "metaStandardEvent('InitiateCheckout'" assets/marketing-runtime.js
           ! grep -q "pushEvent('begin_checkout'" assets/marketing-runtime.js
+          grep -q 'MAX_FAILURES = 5' src/login-rate-limit.js
+          grep -q 'BASE_BLOCK_MS = 15' src/login-rate-limit.js
+          grep -q 'CF-Connecting-IP' src/login-rate-limit.js
+          grep -q 'security:admin-login:' src/login-rate-limit.js
+          grep -q '429' functions/api/login.js
+          grep -q 'Retry-After' functions/api/login.js
+          grep -q 'registerLoginFailure' functions/api/login.js
           test -f privacidade.html
           test -f termos.html
           grep -q 'Política de Privacidade' privacidade.html
