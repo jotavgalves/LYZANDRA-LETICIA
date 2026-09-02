@@ -3,15 +3,6 @@
   const preview = document.querySelector('#preview');
   if (!editorBox || !preview) return;
 
-  function certificateConfig() {
-    try {
-      const win = preview.contentWindow;
-      return win?.LyzandraCertificates?.normalize?.(win.__SITE_CONTENT__?.site?.certificates || {}) || null;
-    } catch {
-      return null;
-    }
-  }
-
   function patchCertificateControls() {
     const card = document.querySelector('#certificatesVisualCard');
     if (!card) return;
@@ -21,6 +12,7 @@
       const values = options.map(option => option.value);
 
       if (values.includes('contain') && values.includes('cover')) {
+        const selectedBeforePatch = select.value;
         const contain = options.find(option => option.value === 'contain');
         const fill = options.find(option => option.value === 'cover');
 
@@ -34,12 +26,8 @@
         const label = field?.querySelector(':scope > label');
         if (label) label.textContent = 'Ajuste da imagem';
 
-        const current = certificateConfig();
-        if (current?.imageFit === 'fill' || current?.imageFit === 'contain') {
-          select.value = current.imageFit;
-        } else if (!select.value) {
-          select.value = 'fill';
-        }
+        if (selectedBeforePatch === 'contain') select.value = 'contain';
+        else select.value = 'fill';
       }
 
       if (values.includes('1.414/1') && values.includes('4/3')) {
@@ -47,8 +35,6 @@
           if (option.value === '1.414/1') option.textContent = 'A4 horizontal — recomendado · 2600 × 1839 px';
           if (option.value === '4/3') option.textContent = '4:3';
         });
-        const current = certificateConfig();
-        if (current?.aspect) select.value = current.aspect;
       }
     });
 
@@ -63,6 +49,5 @@
   const observer = new MutationObserver(() => setTimeout(patchCertificateControls, 0));
   observer.observe(editorBox, { childList: true, subtree: true });
   preview.addEventListener('load', () => setTimeout(patchCertificateControls, 400));
-  setInterval(patchCertificateControls, 900);
   setTimeout(patchCertificateControls, 500);
 })();
