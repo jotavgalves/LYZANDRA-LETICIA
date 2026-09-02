@@ -25,7 +25,7 @@
   }
 
   function ensureMarketingRuntime() {
-    ensureRuntime('script[data-marketing-runtime]', '/assets/marketing-runtime.js?v=1', 'marketingRuntime');
+    ensureRuntime('script[data-marketing-runtime]', '/assets/marketing-runtime.js?v=2', 'marketingRuntime');
   }
 
   function justify(position) {
