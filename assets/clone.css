@@ -1,17 +1,19 @@
 /* Operational additions only. The captured visual design lives in original.css. */
 html { scroll-behavior: smooth; }
 html, body { min-height: 100%; }
-body { min-height: 100vh; }
+body { min-height: 100vh; min-height: 100dvh; }
 main[data-edit-id="main-001"] {
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 main[data-edit-id="main-001"] > footer[data-edit-id="footer-001"] {
   margin-top: auto;
   width: 100%;
   flex: 0 0 auto;
+  order: 2147483647;
 }
 [data-editor-hidden="true"] { display: none !important; }
 [id^="v0-built-with-button-"] { display: none !important; }
