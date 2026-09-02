@@ -1,0 +1,53 @@
+name: Validate OG image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/og/**'
+      - 'functions/og-image.jpg.js'
+      - 'functions/_middleware.js'
+      - '_routes.json'
+      - '.github/workflows/validate-og-image.yml'
+
+jobs:
+  validate-og:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate exact generated image payload
+        run: |
+          python - <<'PY'
+          import base64, hashlib, re
+          files = [
+              'src/og/part0.js',
+              'src/og/part1.js',
+              'src/og/part2.js',
+              'src/og/part3.js',
+              'src/og/.part3b.js',
+              'src/og/part4.js',
+              'src/og/part5.js',
+              'src/og/part6.js',
+          ]
+          payload = ''
+          for path in files:
+              text = open(path, encoding='utf-8').read().strip()
+              match = re.fullmatch(r"export default '([^']*)';", text)
+              assert match, f'Invalid payload module: {path}'
+              payload += match.group(1)
+          image = base64.b64decode(payload, validate=True)
+          assert len(image) == 40201, f'Unexpected JPEG size: {len(image)}'
+          assert image[:2] == b'\xff\xd8' and image[-2:] == b'\xff\xd9', 'Invalid JPEG markers'
+          digest = hashlib.sha256(image).hexdigest()
+          assert digest == '59a623aeb4038b07f7b2a326305b333392dce7ccf03665ceddd2dc7bbb7016cc', digest
+          print('OG image payload OK:', len(image), digest)
+          PY
+      - name: Validate OG serving and metadata files
+        run: |
+          node --check functions/og-image.jpg.js
+          node --check functions/_middleware.js
+          grep -q 'https://lycilios.com/og-image.jpg' functions/_middleware.js
+          grep -q 'og:image:width' functions/_middleware.js
+          grep -q 'og:image:height' functions/_middleware.js
+          grep -q 'summary_large_image' functions/_middleware.js
+          grep -q '/og-image.jpg' _routes.json
