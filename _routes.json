@@ -2,7 +2,9 @@
   "version": 1,
   "include": [
     "/api/*",
-    "/media/*"
+    "/media/*",
+    "/robots.txt",
+    "/sitemap.xml"
   ],
   "exclude": []
 }
