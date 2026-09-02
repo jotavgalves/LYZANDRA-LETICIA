@@ -11,6 +11,7 @@
   let patches = {};
   let observer = null;
   let scheduled = 0;
+  let initialized = false;
 
   function slug(value) {
     return String(value || 'item')
@@ -70,10 +71,14 @@
     return !!String(el?.textContent || '').replace(/\s+/g, ' ').trim();
   }
 
+  function hasMeaningfulIcon(el) {
+    return !!el?.querySelector?.(':scope > svg');
+  }
+
   function shouldSkip(el) {
     if (!el || el.nodeType !== 1) return true;
-    if (el.closest('script,style,svg,noscript,[data-full-editor-skip],.site-video-player')) return true;
-    if (el.closest('#cookieConsentBanner') && !el.id && !el.dataset.editId) return false;
+    if (el.closest('script,style,noscript,[data-full-editor-skip],.site-video-player')) return true;
+    if (el.closest('svg')) return true;
     return false;
   }
 
@@ -83,9 +88,9 @@
     if (['SECTION','HEADER','FOOTER','ASIDE','IMG','VIDEO','IFRAME'].includes(tag)) return true;
     if (['A','BUTTON'].includes(tag)) return hasMeaningfulText(el) || !!el.getAttribute('aria-label') || tag === 'A';
     if (['SPAN','STRONG','SMALL'].includes(tag)) {
-      if (!hasMeaningfulText(el)) return false;
+      if (!hasMeaningfulText(el) && !hasMeaningfulIcon(el)) return false;
       const parent = el.parentElement?.closest(TEXT_PARENT_SELECTOR);
-      if (parent && parent !== el) return false;
+      if (parent && parent !== el && !hasMeaningfulIcon(el)) return false;
       return true;
     }
     return hasMeaningfulText(el);
@@ -132,7 +137,9 @@
   function applyPatch(el, patch) {
     if (!el || !patch || typeof patch !== 'object') return;
 
-    if (Array.isArray(patch.parts)) {
+    if (typeof patch.html === 'string') {
+      el.innerHTML = patch.html;
+    } else if (Array.isArray(patch.parts)) {
       const nodes = leafTextNodes(el);
       patch.parts.forEach((value, index) => {
         if (nodes[index] && typeof value === 'string') preserveWhitespace(nodes[index], value);
@@ -178,7 +185,7 @@
   }
 
   function startObserver() {
-    if (observer || !document.body) return;
+    if (observer || !document.body || !new URLSearchParams(location.search).has('admin-preview')) return;
     observer = new MutationObserver(records => {
       let changed = false;
       records.forEach(record => {
@@ -203,17 +210,26 @@
   }
 
   async function load() {
+    if (initialized) return;
+    initialized = true;
     ensureStyle();
     assign(document);
-    try {
-      const response = await fetch(API, { cache: 'no-store' });
-      const data = response.ok ? await response.json() : {};
-      patches = data?.patches && typeof data.patches === 'object' ? data.patches : {};
-    } catch {
-      patches = {};
+
+    if (window.__FULL_EDITOR_PATCHES__ && typeof window.__FULL_EDITOR_PATCHES__ === 'object') {
+      patches = window.__FULL_EDITOR_PATCHES__;
+    } else {
+      try {
+        const response = await fetch(API, { cache: 'no-store' });
+        const data = response.ok ? await response.json() : {};
+        patches = data?.patches && typeof data.patches === 'object' ? data.patches : {};
+      } catch {
+        patches = {};
+      }
     }
+
     applyAll(document);
     startObserver();
+    window.__FULL_EDITOR_READY__ = true;
     window.dispatchEvent(new CustomEvent('full-editor-ready', { detail: { patches } }));
   }
 
@@ -231,11 +247,16 @@
     applyAll,
     setPatches(value) {
       patches = value && typeof value === 'object' ? value : {};
+      window.__FULL_EDITOR_PATCHES__ = patches;
       applyAll(document);
     },
-    getPatches() { return patches; }
+    getPatches() { return patches; },
+    load
   };
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load, { once: true });
-  else load();
+  window.addEventListener('site-content-ready', () => { load(); }, { once: true });
+  if (window.__SITE_CONTENT_READY__) load();
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => { if (!initialized) load(); }, 250);
+  }, { once: true });
 })();
