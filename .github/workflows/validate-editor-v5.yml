@@ -12,6 +12,7 @@ on:
       - 'assets/certificates-runtime.js'
       - 'assets/seo-runtime.js'
       - 'src/login-rate-limit.js'
+      - 'functions/index.js'
       - 'functions/api/login.js'
       - 'functions/robots.txt.js'
       - 'functions/sitemap.xml.js'
@@ -46,6 +47,7 @@ jobs:
           node --check assets/certificates-runtime.js
           node --check assets/seo-runtime.js
           node --check src/login-rate-limit.js
+          node --check functions/index.js
           node --check functions/api/login.js
           node --check functions/robots.txt.js
           node --check functions/sitemap.xml.js
@@ -108,6 +110,11 @@ jobs:
           grep -q 'google-site-verification' assets/seo-runtime.js
           grep -q 'application/ld+json' assets/seo-runtime.js
           grep -q "'@type': 'Course'" assets/seo-runtime.js
+          grep -q 'HTMLRewriter' functions/index.js
+          grep -q 'google-site-verification' functions/index.js
+          grep -q 'application/ld+json' functions/index.js
+          grep -q "'@type': 'Course'" functions/index.js
+          grep -q 'X-Robots-Tag' functions/index.js
           grep -q 'connect.facebook.net' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtag/js' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtm.js' assets/marketing-runtime.js
@@ -129,6 +136,7 @@ jobs:
           grep -q 'Sitemap:' functions/robots.txt.js
           grep -q 'Disallow: /admin/' functions/robots.txt.js
           grep -q '<urlset' functions/sitemap.xml.js
+          grep -q '"/"' _routes.json
           grep -q '/robots.txt' _routes.json
           grep -q '/sitemap.xml' _routes.json
           grep -q 'X-Robots-Tag: noindex' _headers
