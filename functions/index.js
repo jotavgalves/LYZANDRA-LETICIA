@@ -98,6 +98,7 @@ class HeadHandler {
       : 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
 
     let html = '';
+    html += `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`;
     html += `<link rel="canonical" href="${escapeAttr(canonical)}">`;
     html += `<meta name="robots" content="${escapeAttr(robots)}">`;
     html += `<meta name="googlebot" content="${escapeAttr(robots)}">`;
