@@ -9,12 +9,14 @@
     googleAdsId: '',
     googleAdsLeadLabel: '',
     googleAdsCheckoutLabel: '',
+    conversionValue: '',
+    currency: 'BRL',
     gtmId: '',
     consent: {
       enabled: true,
       title: 'Privacidade e cookies',
       text: 'Usamos cookies e tecnologias de medição para entender o uso do site e melhorar nossos anúncios.',
-      privacyUrl: ''
+      privacyUrl: '/privacidade.html'
     }
   };
 
@@ -44,6 +46,8 @@
       googleAdsId: clean(raw.googleAdsId).toUpperCase(),
       googleAdsLeadLabel: clean(raw.googleAdsLeadLabel),
       googleAdsCheckoutLabel: clean(raw.googleAdsCheckoutLabel),
+      conversionValue: clean(raw.conversionValue),
+      currency: clean(raw.currency || 'BRL').toUpperCase() || 'BRL',
       gtmId: clean(raw.gtmId).toUpperCase(),
       consent: { ...DEFAULT.consent, ...((raw && raw.consent) || {}) }
     };
@@ -168,6 +172,17 @@
     return `${config.googleAdsId}/${value}`;
   }
 
+  function numericValue() {
+    const normalized = clean(config?.conversionValue).replace(',', '.');
+    const value = Number(normalized);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+
+  function valueParams() {
+    const value = numericValue();
+    return value === null ? {} : { value, currency: config.currency || 'BRL' };
+  }
+
   function pushEvent(name, details = {}) {
     ensureDataLayer();
     window.dataLayer.push({ event: name, ...details });
@@ -180,25 +195,81 @@
     window.gtag('event', name, params);
   }
 
-  function metaEvent(name, params = {}) {
+  function metaStandardEvent(name, params = {}) {
     if (config.mode !== 'direct' || !metaLoaded || typeof window.fbq !== 'function') return;
     window.fbq('track', name, params);
   }
 
-  function trackWhatsApp(anchor) {
-    pushEvent('whatsapp_click', { link_url: anchor?.href || '' });
-    googleEvent('generate_lead', { method: 'whatsapp' });
-    const sendTo = adsSendTo(config.googleAdsLeadLabel);
-    if (sendTo && config.mode === 'direct') window.gtag('event', 'conversion', { send_to: sendTo });
-    metaEvent('Contact', { content_name: 'WhatsApp' });
+  function metaCustomEvent(name, params = {}) {
+    if (config.mode !== 'direct' || !metaLoaded || typeof window.fbq !== 'function') return;
+    window.fbq('trackCustom', name, params);
   }
 
-  function trackCheckout(anchor) {
-    pushEvent('begin_checkout', { link_url: anchor?.href || '' });
-    googleEvent('begin_checkout', { currency: 'BRL' });
-    const sendTo = adsSendTo(config.googleAdsCheckoutLabel);
-    if (sendTo && config.mode === 'direct') window.gtag('event', 'conversion', { send_to: sendTo });
-    metaEvent('InitiateCheckout');
+  function fireAdsConversion(label, params = {}, callback) {
+    const sendTo = adsSendTo(label);
+    if (!sendTo || config.mode !== 'direct') {
+      if (callback) setTimeout(callback, 220);
+      return false;
+    }
+    ensureDataLayer();
+    window.gtag('event', 'conversion', {
+      send_to: sendTo,
+      ...params,
+      ...(callback ? { event_callback: callback, event_timeout: 450 } : {})
+    });
+    return true;
+  }
+
+  function isPlaceholderHref(href) {
+    const value = clean(href);
+    return !value || value === '#' || /^javascript:/i.test(value);
+  }
+
+  function isTrackableHref(anchor) {
+    if (!anchor) return false;
+    const raw = clean(anchor.getAttribute('href'));
+    return !isPlaceholderHref(raw) && raw !== '#planos';
+  }
+
+  const FORWARD_PARAMS = [
+    'utm_source','utm_medium','utm_campaign','utm_term','utm_content',
+    'src','sck','s1','s2','s3','gclid','gbraid','wbraid','fbclid'
+  ];
+
+  function decorateCheckoutLink(anchor) {
+    if (!anchor || !isTrackableHref(anchor)) return;
+    let target;
+    try { target = new URL(anchor.href, location.href); } catch { return; }
+    if (!/(^|\.)kiwify\.com\.br$/i.test(target.hostname)) return;
+
+    const landing = new URL(location.href);
+    FORWARD_PARAMS.forEach(key => {
+      const value = landing.searchParams.get(key);
+      if (value && !target.searchParams.has(key)) target.searchParams.set(key, value);
+    });
+    anchor.href = target.toString();
+  }
+
+  function trackWhatsApp(anchor) {
+    const details = { link_url: anchor?.href || '' };
+    pushEvent('whatsapp_click', details);
+    googleEvent('generate_lead', { method: 'whatsapp' });
+    fireAdsConversion(config.googleAdsLeadLabel);
+    metaStandardEvent('Contact', { content_name: 'WhatsApp' });
+  }
+
+  function trackCheckoutClick(anchor, callback) {
+    const params = { link_url: anchor?.href || '', ...valueParams() };
+    pushEvent('checkout_click', params);
+    googleEvent('checkout_click', params);
+    metaCustomEvent('CheckoutClick', params);
+    fireAdsConversion(config.googleAdsCheckoutLabel, valueParams(), callback);
+  }
+
+  function shouldDelayNavigation(event, anchor) {
+    if (!anchor || anchor.target === '_blank') return false;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+    return true;
   }
 
   function bindClicks() {
@@ -210,13 +281,49 @@
       if (!anchor) return;
       const href = clean(anchor.getAttribute('href'));
       const id = anchor.dataset.editId || '';
-      const whatsapp = /(?:wa\.me|api\.whatsapp\.com|whatsapp:)/i.test(href) || id === 'a-005' || id === 'a-006';
-      if (whatsapp) {
+
+      const isContactButton = id === 'a-005' || id === 'a-006';
+      const whatsappUrl = /(?:wa\.me|api\.whatsapp\.com|whatsapp:)/i.test(href);
+      if ((whatsappUrl || isContactButton) && isTrackableHref(anchor)) {
         trackWhatsApp(anchor);
         return;
       }
-      if (id === 'a-002') trackCheckout(anchor);
+
+      if (id === 'a-002' && isTrackableHref(anchor)) {
+        decorateCheckoutLink(anchor);
+        if (shouldDelayNavigation(event, anchor)) {
+          event.preventDefault();
+          let navigated = false;
+          const go = () => {
+            if (navigated) return;
+            navigated = true;
+            location.href = anchor.href;
+          };
+          trackCheckoutClick(anchor, go);
+          setTimeout(go, 520);
+        } else {
+          trackCheckoutClick(anchor);
+        }
+      }
     }, { capture: true });
+  }
+
+  function ensureLegalLinks() {
+    const privacy = document.querySelector('[data-edit-id="a-003"]');
+    const terms = document.querySelector('[data-edit-id="a-004"]');
+    if (privacy && isPlaceholderHref(privacy.getAttribute('href'))) privacy.href = '/privacidade.html';
+    if (terms && isPlaceholderHref(terms.getAttribute('href'))) terms.href = '/termos.html';
+
+    const nav = privacy?.closest('nav') || terms?.closest('nav') || document.querySelector('footer nav');
+    if (config?.consent?.enabled && nav && !nav.querySelector('[data-ly-manage-consent]')) {
+      const manage = document.createElement('button');
+      manage.type = 'button';
+      manage.dataset.lyManageConsent = '1';
+      manage.textContent = 'Gerenciar cookies';
+      manage.style.cssText = 'border:0;background:transparent;padding:0;color:inherit;font:inherit;cursor:pointer;opacity:.78;';
+      manage.onclick = () => showConsentBanner(true);
+      nav.appendChild(manage);
+    }
   }
 
   function removeBanner() {
@@ -230,8 +337,10 @@
     removeBanner();
   }
 
-  function showConsentBanner() {
-    if (!config.consent.enabled || consentChoice() !== 'unset' || document.querySelector('[data-ly-consent-banner]')) return;
+  function showConsentBanner(force = false) {
+    if (!config?.consent?.enabled) return;
+    if (!force && consentChoice() !== 'unset') return;
+    if (document.querySelector('[data-ly-consent-banner]')) return;
 
     const banner = document.createElement('aside');
     banner.dataset.lyConsentBanner = '1';
@@ -247,13 +356,11 @@
     text.style.cssText = 'font-size:12px;line-height:1.55;color:#d7d1d5;margin:0 0 12px;';
     banner.append(title, text);
 
-    if (config.consent.privacyUrl) {
-      const link = document.createElement('a');
-      link.href = config.consent.privacyUrl;
-      link.textContent = 'Política de Privacidade';
-      link.style.cssText = 'display:inline-block;color:#ff6eae;font-size:11px;margin-bottom:12px;text-decoration:underline;';
-      banner.appendChild(link);
-    }
+    const link = document.createElement('a');
+    link.href = config.consent.privacyUrl || '/privacidade.html';
+    link.textContent = 'Política de Privacidade';
+    link.style.cssText = 'display:inline-block;color:#ff6eae;font-size:11px;margin-bottom:12px;text-decoration:underline;';
+    banner.appendChild(link);
 
     const actions = document.createElement('div');
     actions.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;';
@@ -276,6 +383,7 @@
     if (initialized || isPreview()) return;
     config = normalize(data?.site?.marketing);
     injectMetaVerification(config.metaDomainVerification);
+    ensureLegalLinks();
     if (!config.enabled) return;
 
     initialized = true;
@@ -298,6 +406,9 @@
     },
     consent(choice) {
       if (choice === 'granted' || choice === 'denied') saveConsent(choice);
+    },
+    manageConsent() {
+      showConsentBanner(true);
     },
     resetConsent() {
       try { localStorage.removeItem(CONSENT_KEY); } catch {}
