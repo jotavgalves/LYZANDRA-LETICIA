@@ -1,3 +1,5 @@
+const DEFAULT_HOME = 'https://lycilios.com/';
+
 function escapeXml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -8,7 +10,7 @@ function escapeXml(value) {
 }
 
 async function canonicalHome(request, env) {
-  let url = `${new URL(request.url).origin}/`;
+  let url = DEFAULT_HOME;
   try {
     const data = await env.SITE_CONTENT?.get('site-content', 'json');
     const canonical = String(data?.site?.seo?.canonicalUrl || '').trim();
