@@ -28,6 +28,10 @@
     ensureRuntime('script[data-marketing-runtime]', '/assets/marketing-runtime.js?v=2', 'marketingRuntime');
   }
 
+  function ensureCertificatesRuntime() {
+    ensureRuntime('script[data-certificates-runtime]', '/assets/certificates-runtime.js?v=1', 'certificatesRuntime');
+  }
+
   function justify(position) {
     if (position === 'left') return 'flex-start';
     if (position === 'right') return 'flex-end';
@@ -81,6 +85,7 @@
 
   ensureTestimonialsRuntime();
   ensureMarketingRuntime();
+  ensureCertificatesRuntime();
   window.addEventListener('site-content-ready', event => applyIdentity(event.detail || window.__SITE_CONTENT__ || {}));
   if (window.__SITE_CONTENT__) applyIdentity(window.__SITE_CONTENT__);
 })();
