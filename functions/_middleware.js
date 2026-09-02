@@ -22,11 +22,16 @@ class DefaultOgHandler {
       `<meta property="og:image:width" content="1200">` +
       `<meta property="og:image:height" content="630">` +
       `<meta property="og:image:alt" content="Speed Lash — curso de extensão de cílios com Lyzandra Letícia">` +
-      `<meta name="twitter:card" content="summary_large_image">` +
       `<meta name="twitter:image" content="${image}">` +
       `<meta name="twitter:image:alt" content="Speed Lash — curso de extensão de cílios com Lyzandra Letícia">`,
       { html: true }
     );
+  }
+}
+
+class TwitterCardHandler {
+  element(meta) {
+    meta.setAttribute('content', 'summary_large_image');
   }
 }
 
@@ -44,6 +49,7 @@ export async function onRequest(context) {
   if (configuredImage) return response;
 
   const rewritten = new HTMLRewriter()
+    .on('meta[name="twitter:card"]', new TwitterCardHandler())
     .on('head', new DefaultOgHandler(DEFAULT_OG_IMAGE))
     .transform(response);
 
