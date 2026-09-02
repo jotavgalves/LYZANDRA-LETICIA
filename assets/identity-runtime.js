@@ -29,7 +29,7 @@
   }
 
   function ensureCertificatesRuntime() {
-    ensureRuntime('script[data-certificates-runtime]', '/assets/certificates-runtime.js?v=1', 'certificatesRuntime');
+    ensureRuntime('script[data-certificates-runtime]', '/assets/certificates-runtime.js?v=2', 'certificatesRuntime');
   }
 
   function justify(position) {
