@@ -44,15 +44,25 @@
     return 'center center';
   }
 
+  function isStoryPreset(item) {
+    return item.mode === 'image' && item.fit === 'contain' && item.position === 'center' && Number(item.imageHeight) === 420;
+  }
+
   function makeContentImage(item) {
+    const story = isStoryPreset(item);
     const frame = document.createElement('div');
-    frame.style.cssText = 'width:100%;overflow:hidden;border-radius:14px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);';
+    frame.dataset.testimonialImageMode = story ? 'story' : 'standard';
+    frame.style.cssText = story
+      ? 'width:100%;aspect-ratio:9/16;overflow:hidden;border-radius:14px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);'
+      : 'width:100%;overflow:hidden;border-radius:14px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);';
     const img = document.createElement('img');
     img.src = item.image;
     img.alt = item.name ? `Depoimento de ${item.name}` : 'Imagem do depoimento';
     img.loading = 'lazy';
     img.decoding = 'async';
-    img.style.cssText = `display:block;width:100%;height:${item.imageHeight}px;object-fit:${item.fit};object-position:${objectPosition(item.position)};background:#fff;`;
+    img.style.cssText = story
+      ? `display:block;width:100%;height:100%;object-fit:contain;object-position:${objectPosition(item.position)};background:#fff;`
+      : `display:block;width:100%;height:${item.imageHeight}px;object-fit:${item.fit};object-position:${objectPosition(item.position)};background:#fff;`;
     frame.appendChild(img);
     return frame;
   }
@@ -77,6 +87,7 @@
     const article = document.createElement('article');
     article.className = 'w-[280px] shrink-0 snap-start rounded-2xl bg-[#efe7de] p-4 text-left shadow-lg';
     article.dataset.testimonialId = item.id;
+    if (isStoryPreset(item)) article.dataset.testimonialLayout = 'story';
 
     const header = document.createElement('div');
     header.className = 'flex items-center gap-3';
