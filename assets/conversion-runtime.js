@@ -1,4 +1,25 @@
 (() => {
+  const ICONS = {
+    'book-open': '<path d="M2 5.5A2.5 2.5 0 0 1 4.5 3H11v17H4.5A2.5 2.5 0 0 0 2 22V5.5Z"/><path d="M22 5.5A2.5 2.5 0 0 0 19.5 3H13v17h6.5A2.5 2.5 0 0 1 22 22V5.5Z"/>',
+    'badge-check': '<path d="M12 2.5 14.2 5l3.3-.2.7 3.2 2.8 1.7-1.5 2.9 1.5 2.9-2.8 1.7-.7 3.2-3.3-.2L12 22.5l-2.2-2.3-3.3.2-.7-3.2L3 15.5l1.5-2.9L3 9.7 5.8 8l.7-3.2 3.3.2L12 2.5Z"/><path d="m8.5 12.5 2.2 2.2 4.8-5"/>',
+    'headset': '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><path d="M18 19c0 1.7-1.3 3-3 3h-3"/><rect x="3" y="13" width="4" height="6" rx="2"/><rect x="17" y="13" width="4" height="6" rx="2"/>',
+    'files': '<path d="M14 2H6a2 2 0 0 0-2 2v12"/><path d="M14 2v6h6"/><path d="M20 8v10a2 2 0 0 1-2 2H8"/><path d="M16 6V4a2 2 0 0 0-2-2"/><path d="M8 6h4M8 10h8M8 14h8"/>',
+    'eye': '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/>',
+    'shield-check': '<path d="M12 3 4.5 6v5.5c0 4.8 3.1 8.1 7.5 9.5 4.4-1.4 7.5-4.7 7.5-9.5V6L12 3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/>',
+    'monitor-play': '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="m10 8 5 2.5-5 2.5V8Z"/><path d="M8 21h8M12 17v4"/>',
+    'key-round': '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M16 7l2 2M18 5l2 2"/>',
+    'message-circle': '<path d="M21 12a8 8 0 0 1-8 8H7l-4 2 1.3-4A8 8 0 1 1 21 12Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/>',
+    'credit-card': '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+    'lock': '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>',
+    'sparkles': '<path d="m12 3 1.2 3.3L16.5 7.5l-3.3 1.2L12 12l-1.2-3.3-3.3-1.2 3.3-1.2L12 3Z"/><path d="m18 13 .8 2.2L21 16l-2.2.8L18 19l-.8-2.2L15 16l2.2-.8L18 13ZM6 14l.7 1.8 1.8.7-1.8.7L6 19l-.7-1.8-1.8-.7 1.8-.7L6 14Z"/>',
+    'graduation-cap': '<path d="m2 10 10-5 10 5-10 5L2 10Z"/><path d="M6 12.5V17c3.5 2.5 8.5 2.5 12 0v-4.5M22 10v6"/>',
+    'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    'calendar': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>',
+    'heart': '<path d="M20.8 4.6a5.4 5.4 0 0 0-7.6 0L12 5.8l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 21l8.8-8.8a5.4 5.4 0 0 0 0-7.6Z"/>',
+    'star': '<path d="m12 2.5 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9L12 2.5Z"/>',
+    'check-circle': '<circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.6L16.5 9"/>'
+  };
+
   const DEFAULT = {
     enabled: true,
     navigation: {
@@ -16,6 +37,7 @@
     hero: {
       enabled: true,
       trustItems: ['Curso online', 'Acesso após confirmação', 'Certificado profissional', 'Suporte'],
+      trustIcons: ['monitor-play', 'key-round', 'badge-check', 'headset'],
       proofText: 'Método estruturado para otimizar o atendimento com técnica, segurança e consistência.'
     },
     stickyCta: {
@@ -30,12 +52,12 @@
       title: 'Uma formação completa, não apenas aulas',
       description: 'O Speed Lash reúne conteúdo técnico, prática orientada e recursos para você estudar com uma sequência clara e aplicar o método com mais segurança.',
       items: [
-        { title: '5 módulos + módulo bônus', text: 'Conteúdo organizado do preparo à finalização, com prática e gestão do atendimento.' },
-        { title: 'Certificado profissional', text: 'Conclusão com certificado para valorizar sua formação e trajetória profissional.' },
-        { title: 'Suporte durante a formação', text: 'Apoio para dúvidas e acompanhamento durante o processo de aprendizagem.' },
-        { title: 'Materiais complementares', text: 'Conteúdos extras para reforçar o estudo e a execução das técnicas.' },
-        { title: 'Técnicas procuradas', text: 'Volume Russo, Capping e Efeito Molhado dentro da metodologia do curso.' },
-        { title: '7 dias de garantia', text: 'Período de garantia apresentado na própria oferta do Speed Lash.' }
+        { title: '5 módulos + módulo bônus', text: 'Conteúdo organizado do preparo à finalização, com prática e gestão do atendimento.', icon: 'book-open' },
+        { title: 'Certificado profissional', text: 'Conclusão com certificado para valorizar sua formação e trajetória profissional.', icon: 'badge-check' },
+        { title: 'Suporte durante a formação', text: 'Apoio para dúvidas e acompanhamento durante o processo de aprendizagem.', icon: 'headset' },
+        { title: 'Materiais complementares', text: 'Conteúdos extras para reforçar o estudo e a execução das técnicas.', icon: 'files' },
+        { title: 'Técnicas procuradas', text: 'Volume Russo, Capping e Efeito Molhado dentro da metodologia do curso.', icon: 'eye' },
+        { title: '7 dias de garantia', text: 'Período de garantia apresentado na própria oferta do Speed Lash.', icon: 'shield-check' }
       ]
     },
     authority: {
@@ -50,7 +72,8 @@
     },
     offerTrust: {
       enabled: true,
-      items: ['Pagamento seguro', '7 dias de garantia', 'Acesso após confirmação', 'Checkout protegido']
+      items: ['Pagamento seguro', '7 dias de garantia', 'Acesso após confirmação', 'Checkout protegido'],
+      icons: ['credit-card', 'shield-check', 'key-round', 'lock']
     },
     faq: {
       enabled: true,
@@ -69,21 +92,56 @@
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const clone = value => JSON.parse(JSON.stringify(value));
 
+  function inferIcon(text, fallback = 'sparkles') {
+    const value = String(text || '').toLocaleLowerCase('pt-BR');
+    if (/certific/.test(value)) return 'badge-check';
+    if (/garantia/.test(value)) return 'shield-check';
+    if (/checkout|protegid|cadeado/.test(value)) return 'lock';
+    if (/pagamento|cartão|cartao/.test(value)) return 'credit-card';
+    if (/acesso|libera|chave/.test(value)) return 'key-round';
+    if (/suporte|dúvida|duvida|ajuda/.test(value)) return 'headset';
+    if (/material|arquivo|apostila|pdf/.test(value)) return 'files';
+    if (/técnic|tecnic|cíli|cilio|volume|lash/.test(value)) return 'eye';
+    if (/módulo|modulo|aula|conteúdo|conteudo|formação|formacao/.test(value)) return 'book-open';
+    if (/online|vídeo|video/.test(value)) return 'monitor-play';
+    return ICONS[fallback] ? fallback : 'sparkles';
+  }
+
+  function iconSvg(name, size = 20) {
+    const key = ICONS[name] ? name : 'sparkles';
+    return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style="width:${size}px;height:${size}px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round">${ICONS[key]}</svg>`;
+  }
+
   function normalize(value) {
     const raw = value && typeof value === 'object' ? value : {};
-    return {
+    const normalized = {
       ...clone(DEFAULT),
       ...raw,
       navigation: { ...clone(DEFAULT.navigation), ...(raw.navigation || {}), items: Array.isArray(raw.navigation?.items) ? raw.navigation.items : clone(DEFAULT.navigation.items) },
-      hero: { ...clone(DEFAULT.hero), ...(raw.hero || {}), trustItems: Array.isArray(raw.hero?.trustItems) ? raw.hero.trustItems : clone(DEFAULT.hero.trustItems) },
+      hero: {
+        ...clone(DEFAULT.hero),
+        ...(raw.hero || {}),
+        trustItems: Array.isArray(raw.hero?.trustItems) ? raw.hero.trustItems : clone(DEFAULT.hero.trustItems),
+        trustIcons: Array.isArray(raw.hero?.trustIcons) ? raw.hero.trustIcons : clone(DEFAULT.hero.trustIcons)
+      },
       stickyCta: { ...clone(DEFAULT.stickyCta), ...(raw.stickyCta || {}) },
       receive: { ...clone(DEFAULT.receive), ...(raw.receive || {}), items: Array.isArray(raw.receive?.items) ? raw.receive.items : clone(DEFAULT.receive.items) },
       authority: { ...clone(DEFAULT.authority), ...(raw.authority || {}), stats: Array.isArray(raw.authority?.stats) ? raw.authority.stats : clone(DEFAULT.authority.stats) },
-      offerTrust: { ...clone(DEFAULT.offerTrust), ...(raw.offerTrust || {}), items: Array.isArray(raw.offerTrust?.items) ? raw.offerTrust.items : clone(DEFAULT.offerTrust.items) },
+      offerTrust: {
+        ...clone(DEFAULT.offerTrust),
+        ...(raw.offerTrust || {}),
+        items: Array.isArray(raw.offerTrust?.items) ? raw.offerTrust.items : clone(DEFAULT.offerTrust.items),
+        icons: Array.isArray(raw.offerTrust?.icons) ? raw.offerTrust.icons : clone(DEFAULT.offerTrust.icons)
+      },
       faq: { ...clone(DEFAULT.faq), ...(raw.faq || {}), items: Array.isArray(raw.faq?.items) ? raw.faq.items : clone(DEFAULT.faq.items) },
       enabled: raw.enabled !== false,
       microInteractions: raw.microInteractions !== false
     };
+    normalized.receive.items = normalized.receive.items.map((item, index) => ({
+      ...(item || {}),
+      icon: ICONS[item?.icon] ? item.icon : inferIcon(item?.title, DEFAULT.receive.items[index]?.icon || 'sparkles')
+    }));
+    return normalized;
   }
 
   function cleanup() {
@@ -182,9 +240,10 @@
     box.className = 'conversion-hero-trust';
     const list = document.createElement('div');
     list.className = 'conversion-hero-trust__list';
-    (config.hero.trustItems || []).filter(Boolean).forEach(value => {
+    (config.hero.trustItems || []).filter(Boolean).forEach((value, index) => {
       const chip = document.createElement('span');
-      chip.innerHTML = `<b aria-hidden="true">✓</b>${String(value)}`;
+      const icon = ICONS[config.hero.trustIcons?.[index]] ? config.hero.trustIcons[index] : inferIcon(value, DEFAULT.hero.trustIcons[index] || 'sparkles');
+      chip.innerHTML = `<b aria-hidden="true">${iconSvg(icon, 14)}</b>${escapeHtml(value)}`;
       list.appendChild(chip);
     });
     box.appendChild(list);
@@ -205,7 +264,7 @@
     const link = document.createElement('a');
     link.href = targetHref(config.stickyCta.target || 'planos');
     const text = document.createElement('span');
-    text.innerHTML = `<strong>${config.stickyCta.label || 'QUERO MINHA VAGA'}</strong><small>${config.stickyCta.sublabel || ''}</small>`;
+    text.innerHTML = `<strong>${escapeHtml(config.stickyCta.label || 'QUERO MINHA VAGA')}</strong><small>${escapeHtml(config.stickyCta.sublabel || '')}</small>`;
     const arrow = document.createElement('b');
     arrow.setAttribute('aria-hidden', 'true');
     arrow.textContent = '→';
@@ -223,18 +282,6 @@
     } else wrap.classList.add('is-visible');
   }
 
-  function iconSvg(index) {
-    const icons = [
-      '<path d="M20 6 9 17l-5-5"/>',
-      '<path d="M12 2v20M2 12h20"/>',
-      '<path d="M4 4h16v16H4z"/><path d="m9 12 2 2 4-4"/>',
-      '<circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/>',
-      '<path d="M4 19h16M7 16V8l5-4 5 4v8"/>',
-      '<path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7z"/><path d="m9 12 2 2 4-4"/>'
-    ];
-    return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[index % icons.length]}</svg>`;
-  }
-
   function ensureReceive(config) {
     document.getElementById('conversionReceive')?.remove();
     if (!config.receive.enabled) return;
@@ -243,9 +290,9 @@
     const section = document.createElement('section');
     section.id = 'conversionReceive';
     section.className = 'conversion-receive';
-    const cards = (config.receive.items || []).filter(item => item?.title).map((item, index) => `
+    const cards = (config.receive.items || []).filter(item => item?.title).map(item => `
       <article class="conversion-receive__card">
-        <span class="conversion-receive__icon">${iconSvg(index)}</span>
+        <span class="conversion-receive__icon">${iconSvg(item.icon || inferIcon(item.title), 20)}</span>
         <h3>${escapeHtml(item.title)}</h3>
         <p>${escapeHtml(item.text || '')}</p>
       </article>`).join('');
@@ -283,16 +330,17 @@
     const row = document.createElement('div');
     row.id = 'conversionOfferTrust';
     row.className = 'conversion-offer-trust';
-    (config.offerTrust.items || []).filter(Boolean).forEach(item => {
+    (config.offerTrust.items || []).filter(Boolean).forEach((item, index) => {
       const span = document.createElement('span');
-      span.innerHTML = `<b aria-hidden="true">✓</b>${escapeHtml(item)}`;
+      const icon = ICONS[config.offerTrust.icons?.[index]] ? config.offerTrust.icons[index] : inferIcon(item, DEFAULT.offerTrust.icons[index] || 'check-circle');
+      span.innerHTML = `<b aria-hidden="true">${iconSvg(icon, 11)}</b>${escapeHtml(item)}`;
       row.appendChild(span);
     });
     actionBox.appendChild(row);
     section.classList.add('conversion-offer-enhanced');
   }
 
-  function makeFaqItem(item, index) {
+  function makeFaqItem(item) {
     const article = document.createElement('article');
     article.className = 'conversion-faq-item';
     const button = document.createElement('button');
@@ -326,7 +374,7 @@
       title.textContent = config.faq.title;
       box.appendChild(title);
     }
-    (config.faq.items || []).filter(item => item?.question).forEach((item, index) => box.appendChild(makeFaqItem(item, index)));
+    (config.faq.items || []).filter(item => item?.question).forEach(item => box.appendChild(makeFaqItem(item)));
     host.appendChild(box);
   }
 
@@ -411,7 +459,14 @@
     }
   }
 
-  window.LyzandraConversion = { apply, normalize, DEFAULT: clone(DEFAULT) };
+  window.LyzandraConversion = {
+    apply,
+    normalize,
+    DEFAULT: clone(DEFAULT),
+    ICONS: Object.keys(ICONS),
+    iconSvg,
+    inferIcon
+  };
   window.addEventListener('site-content-ready', event => apply(event.detail || window.__SITE_CONTENT__ || {}));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(fallbackLoad, 80), { once: true });
   else setTimeout(fallbackLoad, 80);
