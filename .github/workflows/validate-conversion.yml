@@ -7,9 +7,13 @@ on:
       - assets/conversion-runtime.js
       - assets/conversion.css
       - assets/original.css
+      - assets/full-editor-runtime.js
       - admin/conversion.js
+      - admin/full-editor.js
+      - admin/index.html
       - assets/testimonials-runtime.js
       - functions/_middleware.js
+      - functions/api/full-editor.js
       - images/**
       - index.html
       - .github/workflows/validate-conversion.yml
@@ -27,7 +31,10 @@ jobs:
           node --check assets/conversion-runtime.js
           node --check admin/conversion.js
           node --check assets/testimonials-runtime.js
+          node --check assets/full-editor-runtime.js
+          node --check admin/full-editor.js
           node --check functions/_middleware.js
+          node --check functions/api/full-editor.js
       - name: Validate conversion integration
         shell: bash
         run: |
@@ -37,6 +44,17 @@ jobs:
           grep -q 'TUDO O QUE VOCÊ RECEBE' assets/conversion-runtime.js
           grep -q 'Aluna Speed Lash' assets/testimonials-runtime.js
           grep -q "text.includes('Jamily')" assets/conversion-runtime.js
+      - name: Validate complete editor integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'full-editor-runtime.js' functions/_middleware.js
+          grep -q 'full-editor.js' admin/index.html
+          grep -q "const KEY = 'site-full-editor'" functions/api/full-editor.js
+          grep -q 'isAuthed' functions/api/full-editor.js
+          grep -q 'data-full-edit-id' assets/full-editor-runtime.js
+          grep -q 'Editor completo do site' admin/full-editor.js
+          grep -q '/api/full-editor' admin/full-editor.js
       - name: Validate local optimized assets
         shell: bash
         run: |
