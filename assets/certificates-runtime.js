@@ -11,8 +11,9 @@
     displayMode: 'single',
     showArrows: true,
     showCounter: true,
-    imageFit: 'contain',
-    aspect: '4/3',
+    fitVersion: 2,
+    imageFit: 'fill',
+    aspect: '1.414/1',
     premiumGlow: true,
     images: [
       {
@@ -55,6 +56,14 @@
         }))
       : clone(DEFAULT.images);
 
+    const migrated = Number(raw.fitVersion || 0) < 2;
+    const imageFit = migrated
+      ? 'fill'
+      : (raw.imageFit === 'contain' ? 'contain' : 'fill');
+    const aspect = migrated
+      ? '1.414/1'
+      : (['auto', '4/3', '16/9', '1.414/1'].includes(raw.aspect) ? raw.aspect : DEFAULT.aspect);
+
     return {
       ...clone(DEFAULT),
       ...raw,
@@ -66,8 +75,9 @@
       displayMode: raw.displayMode === 'carousel' ? 'carousel' : 'single',
       showArrows: raw.showArrows !== false,
       showCounter: raw.showCounter !== false,
-      imageFit: raw.imageFit === 'cover' ? 'cover' : 'contain',
-      aspect: ['auto', '4/3', '16/9', '1.414/1'].includes(raw.aspect) ? raw.aspect : DEFAULT.aspect,
+      fitVersion: 2,
+      imageFit,
+      aspect,
       premiumGlow: raw.premiumGlow !== false,
       images,
       benefits: {
@@ -104,6 +114,8 @@
       [data-ly-certificates-media] img{display:block;width:100%;max-width:100%;max-height:720px;object-position:center;background:#f6f1ed}
       [data-ly-certificates-media][data-aspect="auto"] img{height:auto}
       [data-ly-certificates-media]:not([data-aspect="auto"]) img{height:100%}
+      [data-ly-certificates-media][data-fit="fill"] img{width:100%;height:100%;object-fit:fill;background:transparent}
+      [data-ly-certificates-media][data-fit="contain"] img{object-fit:contain}
       [data-ly-certificates-arrow]{position:absolute;z-index:4;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(10,5,8,.76);color:#fff;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(10px);box-shadow:0 10px 24px rgba(0,0,0,.28);font-size:23px;line-height:1}
       [data-ly-certificates-arrow="prev"]{left:18px}
       [data-ly-certificates-arrow="next"]{right:18px}
@@ -189,6 +201,7 @@
     const media = document.createElement('div');
     media.dataset.lyCertificatesMedia = '1';
     media.dataset.aspect = config.aspect;
+    media.dataset.fit = config.imageFit;
     const image = document.createElement('img');
     image.src = images[index].src;
     image.alt = images[index].alt || `Certificado ${index + 1}`;
