@@ -8,10 +8,15 @@ on:
       - assets/conversion.css
       - assets/original.css
       - assets/full-editor-runtime.js
+      - assets/site-runtime.js
+      - assets/identity-runtime.js
+      - assets/testimonials-runtime.js
+      - assets/certificates-runtime.js
       - admin/conversion.js
       - admin/full-editor.js
+      - admin/conversion-shortcut.js
       - admin/index.html
-      - assets/testimonials-runtime.js
+      - functions/index.js
       - functions/_middleware.js
       - functions/api/full-editor.js
       - images/**
@@ -29,21 +34,47 @@ jobs:
       - name: Validate JavaScript syntax
         run: |
           node --check assets/conversion-runtime.js
-          node --check admin/conversion.js
-          node --check assets/testimonials-runtime.js
           node --check assets/full-editor-runtime.js
+          node --check assets/site-runtime.js
+          node --check assets/identity-runtime.js
+          node --check assets/testimonials-runtime.js
+          node --check assets/certificates-runtime.js
+          node --check admin/conversion.js
           node --check admin/full-editor.js
+          node --check admin/conversion-shortcut.js
+          node --check functions/index.js
           node --check functions/_middleware.js
           node --check functions/api/full-editor.js
-      - name: Validate conversion integration
+      - name: Validate single-pass rendering
         shell: bash
         run: |
-          grep -q 'conversion-runtime.js' functions/_middleware.js
-          grep -q 'conversion.js' functions/_middleware.js
-          grep -q 'conversion-sticky-cta' assets/conversion.css
-          grep -q 'TUDO O QUE VOCÊ RECEBE' assets/conversion-runtime.js
-          grep -q 'Aluna Speed Lash' assets/testimonials-runtime.js
-          grep -q "text.includes('Jamily')" assets/conversion-runtime.js
+          set -euo pipefail
+          grep -q '__SITE_CONTENT_SERVER_APPLIED__' functions/index.js
+          grep -q '__FULL_EDITOR_PATCHES__' functions/index.js
+          grep -q "SITE_CONTENT.get('site-full-editor'" functions/index.js
+          grep -q 'data-site-booting' functions/_middleware.js
+          grep -q 'site-render-ready' assets/site-runtime.js
+          grep -q '__SITE_CONTENT_READY__' assets/site-runtime.js
+          grep -q 'autoInitialized' assets/conversion-runtime.js
+          grep -q 'autoInitialized' assets/identity-runtime.js
+          grep -q 'autoInitialized' assets/testimonials-runtime.js
+          grep -q 'autoInitialized' assets/certificates-runtime.js
+          grep -q "has('admin-preview')" assets/full-editor-runtime.js
+      - name: Validate editable dynamic blocks
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'conversion.js?v=3' admin/index.html
+          grep -q 'conversion-shortcut.js?v=1' admin/index.html
+          grep -q 'Blocos extras' admin/conversion-shortcut.js
+          grep -q 'conversionReceiveHeading' assets/conversion-runtime.js
+          grep -q 'conversionHeroProof' assets/conversion-runtime.js
+          grep -q 'conversionReceiveIcon' assets/conversion-runtime.js
+          grep -q 'certificateFinalHeading' assets/certificates-runtime.js
+          grep -q 'certificateBenefitText' assets/certificates-runtime.js
+          grep -q 'data-icon-name' assets/conversion-runtime.js
+          grep -q 'Ícone exibido' admin/full-editor.js
+          grep -q 'shield-plus' admin/full-editor.js
       - name: Validate complete editor integration
         shell: bash
         run: |
@@ -62,7 +93,9 @@ jobs:
           test -s assets/original.css
           ! grep -q '@font-face' assets/original.css
           ! grep -q 'lycilios.vercel.app' index.html
+          ! grep -q 'lycilios.vercel.app' assets/certificates-runtime.js
           for file in hero-video tec-mega tec-volume-brasileiro tec-molhado certificate lyzandra; do
             test -s "images/$file.webp"
           done
           grep -q '/images/hero-video.webp' index.html
+          grep -q '/images/certificate.webp' assets/certificates-runtime.js
