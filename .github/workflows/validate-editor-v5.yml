@@ -1,4 +1,4 @@
-name: Validate editor v5
+name: Validate editor v6
 
 on:
   push:
@@ -10,6 +10,8 @@ on:
       - 'assets/testimonials-runtime.js'
       - 'assets/marketing-runtime.js'
       - 'assets/certificates-runtime.js'
+      - 'assets/conversion-runtime.js'
+      - 'assets/full-editor-runtime.js'
       - 'assets/seo-runtime.js'
       - 'src/login-rate-limit.js'
       - 'src/og/**'
@@ -17,6 +19,7 @@ on:
       - 'functions/index.js'
       - 'functions/og-image.jpg.js'
       - 'functions/api/login.js'
+      - 'functions/api/full-editor.js'
       - 'functions/robots.txt.js'
       - 'functions/sitemap.xml.js'
       - 'privacidade.html'
@@ -43,11 +46,16 @@ jobs:
           node --check admin/certificates.js
           node --check admin/certificates-fit-fix.js
           node --check admin/seo.js
+          node --check admin/conversion.js
+          node --check admin/full-editor.js
+          node --check admin/conversion-shortcut.js
           node --check assets/site-runtime.js
           node --check assets/identity-runtime.js
           node --check assets/testimonials-runtime.js
           node --check assets/marketing-runtime.js
           node --check assets/certificates-runtime.js
+          node --check assets/conversion-runtime.js
+          node --check assets/full-editor-runtime.js
           node --check assets/seo-runtime.js
           node --check src/login-rate-limit.js
           for f in src/og/part*.js; do node --check "$f"; done
@@ -55,6 +63,7 @@ jobs:
           node --check functions/index.js
           node --check functions/og-image.jpg.js
           node --check functions/api/login.js
+          node --check functions/api/full-editor.js
           node --check functions/robots.txt.js
           node --check functions/sitemap.xml.js
       - name: Validate PowerShell parser
@@ -67,7 +76,8 @@ jobs:
       - name: Validate editor architecture
         shell: bash
         run: |
-          grep -q '<meta name="editor-version" content="5">' admin/index.html
+          set -euo pipefail
+          grep -q '<meta name="editor-version" content="6">' admin/index.html
           grep -q 'noindex,nofollow,noarchive' admin/index.html
           grep -q 'Prévia em tempo real' admin/index.html
           grep -q 'Partes do site' admin/index.html
@@ -77,6 +87,9 @@ jobs:
           grep -q '/admin/marketing.js' admin/index.html
           grep -q '/admin/certificates.js' admin/index.html
           grep -q '/admin/seo.js' admin/index.html
+          grep -q '/admin/conversion.js?v=3' admin/index.html
+          grep -q '/admin/full-editor.js?v=2' admin/index.html
+          grep -q '/admin/conversion-shortcut.js?v=1' admin/index.html
           ! grep -Eqi 'CLASSES CSS|CSS INLINE|span-003|Ferramentas técnicas' admin/index.html
           ! grep -Eqi 'overflow-x:auto|width:max-content' admin/admin.css
           grep -q 'YouTube, Vimeo, TikTok, Instagram, Facebook' admin/admin.js
@@ -98,9 +111,16 @@ jobs:
           grep -q 'SEO e Google' admin/seo.js
           grep -q 'Google Search Console' admin/seo.js
           grep -q 'Imagem de compartilhamento' admin/seo.js
+          grep -q 'Conversão e experiência' admin/conversion.js
+          grep -q 'O que a aluna recebe' admin/conversion.js
+          grep -q 'Editor completo do site' admin/full-editor.js
+          grep -q 'Ícone exibido' admin/full-editor.js
+          grep -q 'Blocos extras' admin/conversion-shortcut.js
           grep -q 'a-006' admin/contact.js
           grep -q 'a-005' admin/contact.js
           grep -q 'data-identity-runtime' assets/site-runtime.js
+          grep -q '__SITE_CONTENT_SERVER_APPLIED__' assets/site-runtime.js
+          grep -q 'site-render-ready' assets/site-runtime.js
           grep -q 'main-logo' assets/identity-runtime.js
           grep -q 'data-testimonials-runtime' assets/identity-runtime.js
           grep -q 'data-marketing-runtime' assets/identity-runtime.js
@@ -112,6 +132,11 @@ jobs:
           grep -q 'LyzandraCertificates' assets/certificates-runtime.js
           grep -q 'Certificação que valoriza sua formação' assets/certificates-runtime.js
           grep -q 'data-ly-certificates-benefits' assets/certificates-runtime.js
+          grep -q 'certificateFinalHeading' assets/certificates-runtime.js
+          grep -q 'conversionReceiveHeading' assets/conversion-runtime.js
+          grep -q 'conversionHeroProof' assets/conversion-runtime.js
+          grep -q 'data-icon-name' assets/conversion-runtime.js
+          grep -q 'data-full-edit-id' assets/full-editor-runtime.js
           grep -q 'LyzandraSEO' assets/seo-runtime.js
           grep -q 'google-site-verification' assets/seo-runtime.js
           grep -q 'application/ld+json' assets/seo-runtime.js
@@ -123,9 +148,12 @@ jobs:
           grep -q "'@type': 'Course'" functions/index.js
           grep -q 'X-Robots-Tag' functions/index.js
           grep -q 'https://lycilios.com/' functions/index.js
+          grep -q '__FULL_EDITOR_PATCHES__' functions/index.js
+          grep -q "SITE_CONTENT.get('site-full-editor'" functions/index.js
           grep -q 'DEFAULT_OG_IMAGE' functions/_middleware.js
           grep -q 'https://lycilios.com/og-image.jpg' functions/_middleware.js
           grep -q 'og:image:width' functions/_middleware.js
+          grep -q 'data-site-booting' functions/_middleware.js
           grep -q 'image/jpeg' functions/og-image.jpg.js
           test "$(find src/og -maxdepth 1 -name 'part*.js' | wc -l)" -eq 7
           grep -q 'connect.facebook.net' assets/marketing-runtime.js
@@ -146,6 +174,8 @@ jobs:
           grep -q '429' functions/api/login.js
           grep -q 'Retry-After' functions/api/login.js
           grep -q 'registerLoginFailure' functions/api/login.js
+          grep -q "const KEY = 'site-full-editor'" functions/api/full-editor.js
+          grep -q 'isAuthed' functions/api/full-editor.js
           grep -q 'Sitemap:' functions/robots.txt.js
           grep -q 'Disallow: /admin/' functions/robots.txt.js
           grep -q 'https://lycilios.com' functions/robots.txt.js
