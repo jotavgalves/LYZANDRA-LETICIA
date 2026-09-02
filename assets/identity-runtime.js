@@ -32,6 +32,10 @@
     ensureRuntime('script[data-certificates-runtime]', '/assets/certificates-runtime.js?v=2', 'certificatesRuntime');
   }
 
+  function ensureSeoRuntime() {
+    ensureRuntime('script[data-seo-runtime]', '/assets/seo-runtime.js?v=1', 'seoRuntime');
+  }
+
   function justify(position) {
     if (position === 'left') return 'flex-start';
     if (position === 'right') return 'flex-end';
@@ -83,6 +87,7 @@
     }
   }
 
+  ensureSeoRuntime();
   ensureTestimonialsRuntime();
   ensureMarketingRuntime();
   ensureCertificatesRuntime();
