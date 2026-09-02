@@ -12,7 +12,10 @@ on:
       - 'assets/certificates-runtime.js'
       - 'assets/seo-runtime.js'
       - 'src/login-rate-limit.js'
+      - 'src/og/**'
+      - 'functions/_middleware.js'
       - 'functions/index.js'
+      - 'functions/og-image.jpg.js'
       - 'functions/api/login.js'
       - 'functions/robots.txt.js'
       - 'functions/sitemap.xml.js'
@@ -47,7 +50,10 @@ jobs:
           node --check assets/certificates-runtime.js
           node --check assets/seo-runtime.js
           node --check src/login-rate-limit.js
+          for f in src/og/part*.js; do node --check "$f"; done
+          node --check functions/_middleware.js
           node --check functions/index.js
+          node --check functions/og-image.jpg.js
           node --check functions/api/login.js
           node --check functions/robots.txt.js
           node --check functions/sitemap.xml.js
@@ -117,6 +123,11 @@ jobs:
           grep -q "'@type': 'Course'" functions/index.js
           grep -q 'X-Robots-Tag' functions/index.js
           grep -q 'https://lycilios.com/' functions/index.js
+          grep -q 'DEFAULT_OG_IMAGE' functions/_middleware.js
+          grep -q 'https://lycilios.com/og-image.jpg' functions/_middleware.js
+          grep -q 'og:image:width' functions/_middleware.js
+          grep -q 'image/jpeg' functions/og-image.jpg.js
+          test "$(find src/og -maxdepth 1 -name 'part*.js' | wc -l)" -eq 7
           grep -q 'connect.facebook.net' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtag/js' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtm.js' assets/marketing-runtime.js
@@ -141,6 +152,7 @@ jobs:
           grep -q '<urlset' functions/sitemap.xml.js
           grep -q 'https://lycilios.com/' functions/sitemap.xml.js
           grep -q '"/"' _routes.json
+          grep -q '/og-image.jpg' _routes.json
           grep -q '/robots.txt' _routes.json
           grep -q '/sitemap.xml' _routes.json
           grep -q 'X-Robots-Tag: noindex' _headers
