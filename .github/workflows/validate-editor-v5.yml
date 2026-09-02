@@ -9,6 +9,7 @@ on:
       - 'assets/identity-runtime.js'
       - 'assets/testimonials-runtime.js'
       - 'assets/marketing-runtime.js'
+      - 'assets/certificates-runtime.js'
       - 'src/login-rate-limit.js'
       - 'functions/api/login.js'
       - 'privacidade.html'
@@ -31,10 +32,12 @@ jobs:
           node --check admin/testimonials.js
           node --check admin/testimonials-fix.js
           node --check admin/marketing.js
+          node --check admin/certificates.js
           node --check assets/site-runtime.js
           node --check assets/identity-runtime.js
           node --check assets/testimonials-runtime.js
           node --check assets/marketing-runtime.js
+          node --check assets/certificates-runtime.js
           node --check src/login-rate-limit.js
           node --check functions/api/login.js
       - name: Validate PowerShell parser
@@ -54,6 +57,7 @@ jobs:
           grep -q '/admin/contact.js' admin/index.html
           grep -q '/admin/testimonials.js' admin/index.html
           grep -q '/admin/marketing.js' admin/index.html
+          grep -q '/admin/certificates.js' admin/index.html
           ! grep -Eqi 'CLASSES CSS|CSS INLINE|span-003|Ferramentas técnicas' admin/index.html
           ! grep -Eqi 'overflow-x:auto|width:max-content' admin/admin.css
           grep -q 'YouTube, Vimeo, TikTok, Instagram, Facebook' admin/admin.js
@@ -69,15 +73,22 @@ jobs:
           grep -q 'Marketing, Pixel e Ads' admin/marketing.js
           grep -q 'Checkout externo' admin/marketing.js
           grep -q 'Meta Pixel ID' admin/marketing.js
+          grep -q 'Certificado profissional' admin/certificates.js
+          grep -q 'Adicionar certificado' admin/certificates.js
+          grep -q 'Bloco final de autoridade' admin/certificates.js
           grep -q 'a-006' admin/contact.js
           grep -q 'a-005' admin/contact.js
           grep -q 'data-identity-runtime' assets/site-runtime.js
           grep -q 'main-logo' assets/identity-runtime.js
           grep -q 'data-testimonials-runtime' assets/identity-runtime.js
           grep -q 'data-marketing-runtime' assets/identity-runtime.js
+          grep -q 'data-certificates-runtime' assets/identity-runtime.js
           grep -q 'LyzandraTestimonials' assets/testimonials-runtime.js
           grep -q 'aspect-ratio:9/16' assets/testimonials-runtime.js
           grep -q 'não há garantia de resultados específicos' assets/testimonials-runtime.js
+          grep -q 'LyzandraCertificates' assets/certificates-runtime.js
+          grep -q 'Certificação que valoriza sua formação' assets/certificates-runtime.js
+          grep -q 'data-ly-certificates-benefits' assets/certificates-runtime.js
           grep -q 'connect.facebook.net' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtag/js' assets/marketing-runtime.js
           grep -q 'googletagmanager.com/gtm.js' assets/marketing-runtime.js
