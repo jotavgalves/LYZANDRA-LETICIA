@@ -136,6 +136,18 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const preview = url.searchParams.has('admin-preview');
+
+  if (!preview && url.hostname === 'www.lycilios.com') {
+    const target = new URL('https://lycilios.com/');
+    target.search = url.search;
+    return Response.redirect(target.toString(), 301);
+  }
+  if (!preview && url.hostname === 'lycilios.com' && url.pathname === '/index.html') {
+    const target = new URL('https://lycilios.com/');
+    target.search = url.search;
+    return Response.redirect(target.toString(), 301);
+  }
+
   let data = {};
   try { data = await env.SITE_CONTENT?.get('site-content', 'json') || {}; } catch {}
 
