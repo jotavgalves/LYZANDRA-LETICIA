@@ -1,5 +1,7 @@
+const DEFAULT_ORIGIN = 'https://lycilios.com';
+
 async function canonicalOrigin(request, env) {
-  let origin = new URL(request.url).origin;
+  let origin = DEFAULT_ORIGIN;
   try {
     const data = await env.SITE_CONTENT?.get('site-content', 'json');
     const canonical = String(data?.site?.seo?.canonicalUrl || '').trim();
