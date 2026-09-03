@@ -1,0 +1,164 @@
+/* Mobile fidelity layer: keeps the phone experience aligned with the desktop visual system. */
+:root{
+  --ly-mobile-bg:#0a0508;
+  --ly-mobile-fg:#fff7fb;
+  --ly-mobile-primary:#fa4a98;
+  --ly-mobile-primary-soft:#f7a4ca;
+  --ly-mobile-card:#120b0f;
+  --ly-mobile-muted:#aca1a7;
+}
+
+/* Video controls: never depend on emoji/text glyph rendering. */
+.site-video-player [data-site-play-icon],
+[data-edit-id="span-004"],
+[data-edit-id="span-026"]{
+  background:linear-gradient(135deg,var(--ly-mobile-primary),var(--ly-mobile-primary-soft))!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  box-shadow:0 12px 36px rgba(250,74,152,.34),0 5px 18px rgba(0,0,0,.38)!important;
+}
+.site-video-player [data-site-play-icon] svg,
+[data-edit-id="span-004"] svg,
+[data-edit-id="span-026"] svg{
+  display:block!important;
+  width:26px!important;
+  height:26px!important;
+  fill:#fff!important;
+  stroke:#fff!important;
+}
+
+/* Floating WhatsApp: consistent brand button instead of a generic chat glyph. */
+a[data-edit-id="a-006"] [data-whatsapp-brand-icon]{
+  display:grid;
+  place-items:center;
+  width:27px;
+  height:27px;
+  flex:0 0 27px;
+  color:#fff;
+}
+a[data-edit-id="a-006"] [data-whatsapp-brand-icon] svg{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+}
+a[data-edit-id="a-006"] > svg[data-whatsapp-replaced="true"]{display:none!important}
+
+@media(max-width:640px){
+  html,body{
+    background:var(--ly-mobile-bg)!important;
+    color:var(--ly-mobile-fg)!important;
+    overscroll-behavior-y:none;
+  }
+  html{
+    --background:var(--ly-mobile-bg);
+    --foreground:var(--ly-mobile-fg);
+    --card:var(--ly-mobile-card);
+    --card-foreground:var(--ly-mobile-fg);
+    --primary:var(--ly-mobile-primary);
+    --primary-foreground:#18070f;
+    --muted-foreground:var(--ly-mobile-muted);
+    --ring:var(--ly-mobile-primary);
+  }
+  main[data-edit-id="main-001"]{background:var(--ly-mobile-bg)!important;color:var(--ly-mobile-fg)!important}
+
+  /* Preserve the desktop glow using deterministic sRGB colors on iOS/WebViews. */
+  #inicio{isolation:isolate;background-color:var(--ly-mobile-bg)!important}
+  #inicio::before{
+    content:"";
+    position:absolute;
+    z-index:-1;
+    pointer-events:none;
+    top:-150px;
+    left:50%;
+    width:min(760px,145vw);
+    height:470px;
+    transform:translateX(-50%);
+    background:radial-gradient(ellipse at center,rgba(250,74,152,.20) 0%,rgba(126,27,71,.10) 38%,rgba(10,5,8,0) 72%);
+  }
+  #inicio>[aria-hidden="true"]{opacity:.35!important}
+
+  /* Static and runtime video play controls share one premium treatment. */
+  .site-video-player [data-site-play-icon],
+  [data-edit-id="span-004"],
+  [data-edit-id="span-026"]{
+    width:58px!important;
+    height:58px!important;
+    border-radius:999px!important;
+  }
+
+  /* WhatsApp stays clear of the CTA, respects iPhone safe areas and remains perfectly circular. */
+  .conversion-enhanced a[data-edit-id="a-006"]{
+    position:fixed!important;
+    z-index:1910!important;
+    right:16px!important;
+    left:auto!important;
+    bottom:calc(16px + env(safe-area-inset-bottom,0px))!important;
+    width:54px!important;
+    min-width:54px!important;
+    height:54px!important;
+    min-height:54px!important;
+    padding:0!important;
+    margin:0!important;
+    display:grid!important;
+    place-items:center!important;
+    gap:0!important;
+    border-radius:999px!important;
+    border:1px solid rgba(255,255,255,.22)!important;
+    background:#25d366!important;
+    color:#fff!important;
+    box-shadow:0 12px 34px rgba(0,0,0,.42),0 5px 18px rgba(37,211,102,.22)!important;
+    transform:none!important;
+    overflow:hidden!important;
+  }
+  html.mobile-sticky-active .conversion-enhanced a[data-edit-id="a-006"]{
+    bottom:calc(94px + env(safe-area-inset-bottom,0px))!important;
+  }
+  .conversion-enhanced a[data-edit-id="a-006"] span:not([data-whatsapp-brand-icon]),
+  .conversion-enhanced a[data-edit-id="a-006"] > svg:not([data-whatsapp-brand-svg]){display:none!important}
+  .conversion-enhanced a[data-edit-id="a-006"] [data-whatsapp-brand-icon]{display:grid!important}
+
+  /* Rebuilt sticky CTA: safe-area aware, symmetric and never clipped by the in-app browser. */
+  .conversion-sticky-cta{
+    position:fixed!important;
+    z-index:1900!important;
+    left:max(14px,env(safe-area-inset-left,0px))!important;
+    right:max(14px,env(safe-area-inset-right,0px))!important;
+    bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;
+    width:auto!important;
+    max-width:540px!important;
+    margin-inline:auto!important;
+    box-sizing:border-box!important;
+    transform:translateY(14px)!important;
+  }
+  .conversion-sticky-cta.mobile-cta-ready{display:block!important}
+  .conversion-sticky-cta.mobile-cta-ready:not(.mobile-cta-visible){opacity:0!important;pointer-events:none!important;transform:translateY(14px)!important}
+  .conversion-sticky-cta.mobile-cta-visible{opacity:1!important;pointer-events:auto!important;transform:none!important}
+  .conversion-sticky-cta a{
+    width:100%!important;
+    min-width:0!important;
+    min-height:64px!important;
+    padding:10px 12px 10px 20px!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+    border-radius:20px!important;
+    overflow:hidden!important;
+    background:linear-gradient(100deg,var(--ly-mobile-primary) 0%,#f77fba 58%,var(--ly-mobile-primary-soft) 100%)!important;
+    border:1px solid rgba(255,255,255,.25)!important;
+    box-shadow:0 16px 42px rgba(0,0,0,.46),0 8px 30px rgba(250,74,152,.23)!important;
+  }
+  .conversion-sticky-cta a>span{min-width:0!important;text-align:left!important}
+  .conversion-sticky-cta strong{font-size:13px!important;line-height:1.15!important;color:#18070f!important}
+  .conversion-sticky-cta small{margin-top:3px!important;font-size:10px!important;color:rgba(24,7,15,.68)!important;opacity:1!important}
+  .conversion-sticky-cta a>b{
+    width:38px!important;
+    height:38px!important;
+    flex:0 0 38px!important;
+    background:rgba(24,7,15,.09)!important;
+    color:#18070f!important;
+    font-size:20px!important;
+  }
+
+  /* Fixed UI must not force extra horizontal width. */
+  body{overflow-x:hidden!important}
+  .conversion-sticky-cta,.conversion-sticky-cta *{box-sizing:border-box}
+}
