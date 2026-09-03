@@ -7,6 +7,7 @@ on:
       - assets/conversion-runtime.js
       - assets/conversion.css
       - assets/original.css
+      - assets/clone.css
       - assets/full-editor-runtime.js
       - assets/site-runtime.js
       - assets/identity-runtime.js
@@ -60,6 +61,15 @@ jobs:
           grep -q 'autoInitialized' assets/testimonials-runtime.js
           grep -q 'autoInitialized' assets/certificates-runtime.js
           grep -q "has('admin-preview')" assets/full-editor-runtime.js
+      - name: Validate visual stability fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'section\[data-edit-id="section-001"\]::before' assets/clone.css
+          grep -q 'isolation: isolate' assets/clone.css
+          grep -q 'conversion-reveal' assets/clone.css
+          grep -q 'section\[data-edit-id="section-002"\] article::-webkit-scrollbar' assets/clone.css
+          grep -q 'scrollbar-width: none' assets/clone.css
       - name: Validate editable dynamic blocks
         shell: bash
         run: |
