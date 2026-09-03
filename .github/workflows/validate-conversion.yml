@@ -82,7 +82,7 @@ jobs:
           grep -q 'mobile-polish.css?v=1' functions/_middleware.js
           grep -q 'mobile-polish.js?v=1' functions/_middleware.js
           grep -q 'data-whatsapp-brand-icon' assets/mobile-polish.js
-          grep -q 'data-site-play-icon' assets/mobile-polish.js
+          grep -q 'sitePlayIcon' assets/mobile-polish.js
           grep -q 'mobile-cta-visible' assets/mobile-polish.js
           grep -q 'safe-area-inset-bottom' assets/mobile-polish.css
           grep -q '#25d366' assets/mobile-polish.css
