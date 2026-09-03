@@ -1,3 +1,5 @@
+import { normalizeLegal, renderLegalMain } from '../src/legal-content.js';
+
 const DEFAULT_OG_IMAGE = 'https://lycilios.com/og-image.jpg';
 
 function escapeAttr(value) {
@@ -51,6 +53,18 @@ class TwitterCardHandler {
   }
 }
 
+class LegalMainHandler {
+  constructor(kind, legal) {
+    this.kind = kind;
+    this.legal = legal;
+  }
+
+  element(main) {
+    main.setInnerContent(renderLegalMain(this.kind, this.legal), { html: true });
+    main.setAttribute('data-legal-server-rendered', 'true');
+  }
+}
+
 export async function onRequest(context) {
   const response = await context.next();
   const type = response.headers.get('content-type') || '';
@@ -59,6 +73,7 @@ export async function onRequest(context) {
   const url = new URL(context.request.url);
   const publicLanding = url.pathname === '/' || url.pathname === '/index.html';
   const admin = url.pathname === '/admin' || url.pathname.startsWith('/admin/');
+  const legalKind = url.pathname === '/termos.html' ? 'terms' : (url.pathname === '/privacidade.html' ? 'privacy' : '');
 
   let configuredImage = '';
   if (publicLanding) {
@@ -68,14 +83,28 @@ export async function onRequest(context) {
     } catch {}
   }
 
+  let legal = null;
+  if (legalKind) {
+    try {
+      const stored = await context.env.SITE_CONTENT?.get('site-legal', 'json');
+      legal = normalizeLegal(stored || {});
+    } catch {
+      legal = normalizeLegal({});
+    }
+  }
+
   const fallbackImage = publicLanding && !configuredImage ? DEFAULT_OG_IMAGE : '';
   let rewriter = new HTMLRewriter().on('head', new HeadInjector({ image: fallbackImage, publicLanding, admin }));
   if (fallbackImage) rewriter = rewriter.on('meta[name="twitter:card"]', new TwitterCardHandler());
+  if (legalKind) rewriter = rewriter.on('main#legalContent', new LegalMainHandler(legalKind, legal));
   const rewritten = rewriter.transform(response);
+
+  const headers = new Headers(rewritten.headers);
+  if (legalKind) headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
 
   return new Response(rewritten.body, {
     status: rewritten.status,
     statusText: rewritten.statusText,
-    headers: rewritten.headers
+    headers
   });
 }
