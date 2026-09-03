@@ -1,4 +1,5 @@
 import { normalizeLegal, renderLegalMain } from '../src/legal-content.js';
+import { TEMPORARY_LEGAL } from '../src/legal-temporary.js';
 
 const DEFAULT_OG_IMAGE = 'https://lycilios.com/og-image.jpg';
 
@@ -87,9 +88,9 @@ export async function onRequest(context) {
   if (legalKind) {
     try {
       const stored = await context.env.SITE_CONTENT?.get('site-legal', 'json');
-      legal = normalizeLegal(stored || {});
+      legal = stored && typeof stored === 'object' ? normalizeLegal(stored) : TEMPORARY_LEGAL;
     } catch {
-      legal = normalizeLegal({});
+      legal = TEMPORARY_LEGAL;
     }
   }
 
