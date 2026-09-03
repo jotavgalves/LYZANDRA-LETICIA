@@ -1,4 +1,12 @@
 (() => {
+  if (!document.querySelector('script[data-mobile-sticky-admin]')) {
+    const script = document.createElement('script');
+    script.src = '/admin/mobile-sticky-control.js?v=1';
+    script.defer = true;
+    script.dataset.mobileStickyAdmin = '1';
+    document.head.appendChild(script);
+  }
+
   const generalBtn = document.querySelector('#generalBtn');
   if (!generalBtn || document.querySelector('#conversionBlocksShortcut')) return;
 
