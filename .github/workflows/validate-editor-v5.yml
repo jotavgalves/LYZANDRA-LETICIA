@@ -14,12 +14,14 @@ on:
       - 'assets/full-editor-runtime.js'
       - 'assets/seo-runtime.js'
       - 'src/login-rate-limit.js'
+      - 'src/legal-content.js'
       - 'src/og/**'
       - 'functions/_middleware.js'
       - 'functions/index.js'
       - 'functions/og-image.jpg.js'
       - 'functions/api/login.js'
       - 'functions/api/full-editor.js'
+      - 'functions/api/legal.js'
       - 'functions/robots.txt.js'
       - 'functions/sitemap.xml.js'
       - 'privacidade.html'
@@ -46,6 +48,7 @@ jobs:
           node --check admin/certificates.js
           node --check admin/certificates-fit-fix.js
           node --check admin/seo.js
+          node --check admin/legal.js
           node --check admin/conversion.js
           node --check admin/full-editor.js
           node --check admin/conversion-shortcut.js
@@ -58,12 +61,14 @@ jobs:
           node --check assets/full-editor-runtime.js
           node --check assets/seo-runtime.js
           node --check src/login-rate-limit.js
+          node --check src/legal-content.js
           for f in src/og/part*.js; do node --check "$f"; done
           node --check functions/_middleware.js
           node --check functions/index.js
           node --check functions/og-image.jpg.js
           node --check functions/api/login.js
           node --check functions/api/full-editor.js
+          node --check functions/api/legal.js
           node --check functions/robots.txt.js
           node --check functions/sitemap.xml.js
       - name: Validate PowerShell parser
@@ -87,6 +92,7 @@ jobs:
           grep -q '/admin/marketing.js' admin/index.html
           grep -q '/admin/certificates.js' admin/index.html
           grep -q '/admin/seo.js' admin/index.html
+          grep -q '/admin/legal.js?v=1' admin/index.html
           grep -q '/admin/conversion.js?v=3' admin/index.html
           grep -q '/admin/full-editor.js?v=2' admin/index.html
           grep -q '/admin/conversion-shortcut.js?v=1' admin/index.html
@@ -111,6 +117,10 @@ jobs:
           grep -q 'SEO e Google' admin/seo.js
           grep -q 'Google Search Console' admin/seo.js
           grep -q 'Imagem de compartilhamento' admin/seo.js
+          grep -q 'Legal · Termos e Privacidade' admin/legal.js
+          grep -q 'Nome ou razão social do fornecedor' admin/legal.js
+          grep -q 'CPF ou CNPJ' admin/legal.js
+          grep -q 'Adicionar seção' admin/legal.js
           grep -q 'Conversão e experiência' admin/conversion.js
           grep -q 'O que a aluna recebe' admin/conversion.js
           grep -q 'Editor completo do site' admin/full-editor.js
@@ -154,6 +164,9 @@ jobs:
           grep -q 'https://lycilios.com/og-image.jpg' functions/_middleware.js
           grep -q 'og:image:width' functions/_middleware.js
           grep -q 'data-site-booting' functions/_middleware.js
+          grep -q "SITE_CONTENT?.get('site-legal'" functions/_middleware.js
+          grep -q 'renderLegalMain' functions/_middleware.js
+          grep -q 'main#legalContent' functions/_middleware.js
           grep -q 'image/jpeg' functions/og-image.jpg.js
           test "$(find src/og -maxdepth 1 -name 'part*.js' | wc -l)" -eq 7
           grep -q 'connect.facebook.net' assets/marketing-runtime.js
@@ -171,11 +184,16 @@ jobs:
           grep -q 'BASE_BLOCK_MS = 15' src/login-rate-limit.js
           grep -q 'CF-Connecting-IP' src/login-rate-limit.js
           grep -q 'security:admin-login:' src/login-rate-limit.js
+          grep -q 'DEFAULT_LEGAL' src/legal-content.js
+          grep -q 'Direito de arrependimento e garantia' src/legal-content.js
+          grep -q 'Seus direitos pela LGPD' src/legal-content.js
           grep -q '429' functions/api/login.js
           grep -q 'Retry-After' functions/api/login.js
           grep -q 'registerLoginFailure' functions/api/login.js
           grep -q "const KEY = 'site-full-editor'" functions/api/full-editor.js
           grep -q 'isAuthed' functions/api/full-editor.js
+          grep -q "const KEY = 'site-legal'" functions/api/legal.js
+          grep -q 'isAuthed' functions/api/legal.js
           grep -q 'Sitemap:' functions/robots.txt.js
           grep -q 'Disallow: /admin/' functions/robots.txt.js
           grep -q 'https://lycilios.com' functions/robots.txt.js
@@ -183,12 +201,16 @@ jobs:
           grep -q 'https://lycilios.com/' functions/sitemap.xml.js
           grep -q '"/"' _routes.json
           grep -q '/og-image.jpg' _routes.json
+          grep -q '/privacidade.html' _routes.json
+          grep -q '/termos.html' _routes.json
           grep -q '/robots.txt' _routes.json
           grep -q '/sitemap.xml' _routes.json
           grep -q 'X-Robots-Tag: noindex' _headers
           test -f privacidade.html
           test -f termos.html
+          grep -q 'id="legalContent"' privacidade.html
+          grep -q 'id="legalContent"' termos.html
           grep -q 'Política de Privacidade' privacidade.html
-          grep -q 'Termos de Uso' termos.html
+          grep -q 'Termos de Uso e Compra' termos.html
           grep -q 'www.tiktok.com/player/v1' assets/site-runtime.js
           grep -q 'quality=1080p&max_quality=4k' assets/site-runtime.js
