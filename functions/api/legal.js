@@ -1,12 +1,13 @@
 import { isAuthed, json } from '../../src/auth.js';
-import { DEFAULT_LEGAL, normalizeLegal } from '../../src/legal-content.js';
+import { normalizeLegal } from '../../src/legal-content.js';
+import { TEMPORARY_LEGAL } from '../../src/legal-temporary.js';
 
 const KEY = 'site-legal';
 
 export async function onRequestGet({ env }) {
-  if (!env.SITE_CONTENT) return json(DEFAULT_LEGAL);
+  if (!env.SITE_CONTENT) return json(TEMPORARY_LEGAL);
   const value = await env.SITE_CONTENT.get(KEY, 'json');
-  return json(normalizeLegal(value || {}));
+  return json(value && typeof value === 'object' ? normalizeLegal(value) : TEMPORARY_LEGAL);
 }
 
 export async function onRequestPut({ request, env }) {
