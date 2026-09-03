@@ -27,3 +27,9 @@
 
 /assets/seo-runtime.js
   Cache-Control: no-cache, must-revalidate
+
+/assets/mobile-polish.css
+  Cache-Control: no-cache, must-revalidate
+
+/assets/mobile-polish.js
+  Cache-Control: no-cache, must-revalidate
