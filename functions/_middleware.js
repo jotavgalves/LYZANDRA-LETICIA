@@ -32,7 +32,7 @@ class HeadInjector {
       html += '<script defer data-certificates-runtime="1" src="/assets/certificates-runtime.js?v=3"></script>';
       html += '<script defer data-seo-runtime="1" src="/assets/seo-runtime.js?v=1"></script>';
       html += '<script defer data-full-editor-runtime="1" src="/assets/full-editor-runtime.js?v=2"></script>';
-      html += '<script defer data-mobile-polish="1" src="/assets/mobile-polish.js?v=1"></script>';
+      html += '<script defer data-mobile-polish="1" src="/assets/mobile-polish.js?v=2"></script>';
       if (this.image) {
         const image = escapeAttr(this.image);
         html += `<meta property="og:image" content="${image}">`;
