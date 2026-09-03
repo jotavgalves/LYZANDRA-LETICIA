@@ -6,6 +6,8 @@ on:
     paths:
       - assets/conversion-runtime.js
       - assets/conversion.css
+      - assets/mobile-polish.css
+      - assets/mobile-polish.js
       - assets/original.css
       - assets/clone.css
       - assets/full-editor-runtime.js
@@ -35,6 +37,7 @@ jobs:
       - name: Validate JavaScript syntax
         run: |
           node --check assets/conversion-runtime.js
+          node --check assets/mobile-polish.js
           node --check assets/full-editor-runtime.js
           node --check assets/site-runtime.js
           node --check assets/identity-runtime.js
@@ -70,6 +73,20 @@ jobs:
           grep -q 'conversion-reveal' assets/clone.css
           grep -q 'section\[data-edit-id="section-002"\] article::-webkit-scrollbar' assets/clone.css
           grep -q 'scrollbar-width: none' assets/clone.css
+      - name: Validate mobile fidelity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s assets/mobile-polish.css
+          test -s assets/mobile-polish.js
+          grep -q 'mobile-polish.css?v=1' functions/_middleware.js
+          grep -q 'mobile-polish.js?v=1' functions/_middleware.js
+          grep -q 'data-whatsapp-brand-icon' assets/mobile-polish.js
+          grep -q 'data-site-play-icon' assets/mobile-polish.js
+          grep -q 'mobile-cta-visible' assets/mobile-polish.js
+          grep -q 'safe-area-inset-bottom' assets/mobile-polish.css
+          grep -q '#25d366' assets/mobile-polish.css
+          grep -q 'overscroll-behavior-y:none' assets/mobile-polish.css
       - name: Validate editable dynamic blocks
         shell: bash
         run: |
