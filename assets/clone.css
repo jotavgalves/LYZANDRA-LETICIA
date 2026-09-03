@@ -36,6 +36,13 @@ section[data-edit-id="section-001"]::before {
 section[data-edit-id="section-001"] > [data-edit-id="div-001"] {
   display: none !important;
 }
+/* The first screen must never be hidden/revealed after first paint. */
+section[data-edit-id="section-001"].conversion-reveal,
+section[data-edit-id="section-001"].conversion-revealed {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
 
 /* Testimonial cards never need their own scrollbars. Chromium/Opera can show
    overlay scrollbar tracks on these nested cards while the horizontal carousel
