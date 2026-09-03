@@ -18,6 +18,7 @@ on:
       - admin/conversion.js
       - admin/full-editor.js
       - admin/conversion-shortcut.js
+      - admin/mobile-sticky-control.js
       - admin/index.html
       - functions/index.js
       - functions/_middleware.js
@@ -46,6 +47,7 @@ jobs:
           node --check admin/conversion.js
           node --check admin/full-editor.js
           node --check admin/conversion-shortcut.js
+          node --check admin/mobile-sticky-control.js
           node --check functions/index.js
           node --check functions/_middleware.js
           node --check functions/api/full-editor.js
@@ -80,10 +82,16 @@ jobs:
           test -s assets/mobile-polish.css
           test -s assets/mobile-polish.js
           grep -q 'mobile-polish.css?v=1' functions/_middleware.js
-          grep -q 'mobile-polish.js?v=1' functions/_middleware.js
+          grep -q 'mobile-polish.js?v=2' functions/_middleware.js
           grep -q 'data-whatsapp-brand-icon' assets/mobile-polish.js
           grep -q 'sitePlayIcon' assets/mobile-polish.js
           grep -q 'mobile-cta-visible' assets/mobile-polish.js
+          grep -q 'mobileStickyCtaEnabled' assets/mobile-polish.js
+          grep -q "mobileStickyEnabled = false" assets/mobile-polish.js
+          grep -q 'setMobileStickyEnabled' assets/mobile-polish.js
+          grep -q 'mobile-sticky-control.js?v=1' admin/conversion-shortcut.js
+          grep -q 'mobileStickyCtaEnabled' admin/mobile-sticky-control.js
+          grep -q 'Desativado: nenhuma faixa fixa' admin/mobile-sticky-control.js
           grep -q 'safe-area-inset-bottom' assets/mobile-polish.css
           grep -q '#25d366' assets/mobile-polish.css
           grep -q 'overscroll-behavior-y:none' assets/mobile-polish.css
