@@ -6,6 +6,8 @@
     "/api/*",
     "/media/*",
     "/og-image.jpg",
+    "/privacidade.html",
+    "/termos.html",
     "/robots.txt",
     "/sitemap.xml"
   ],
