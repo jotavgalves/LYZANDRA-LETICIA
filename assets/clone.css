@@ -18,3 +18,43 @@ main[data-edit-id="main-001"] > footer[data-edit-id="footer-001"] {
 [data-editor-hidden="true"] { display: none !important; }
 [id^="v0-built-with-button-"] { display: none !important; }
 .site-runtime-error { position:fixed; left:12px; bottom:12px; z-index:9998; max-width:360px; padding:10px 12px; border-radius:10px; background:#451a1a; color:#fee2e2; font:12px/1.4 Poppins,sans-serif; box-shadow:0 10px 30px #0008; }
+
+/* Keep the opening glow in one deterministic CSS layer. The captured inline
+   gradient used a negative z-index and could fall behind the page after the
+   runtime created new stacking contexts. */
+section[data-edit-id="section-001"] {
+  isolation: isolate;
+}
+section[data-edit-id="section-001"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 45% at 50% 0%, oklch(0.68 0.22 358 / 0.28), transparent 70%);
+}
+section[data-edit-id="section-001"] > [data-edit-id="div-001"] {
+  display: none !important;
+}
+
+/* Testimonial cards never need their own scrollbars. Chromium/Opera can show
+   overlay scrollbar tracks on these nested cards while the horizontal carousel
+   itself is being scrolled, which looked like gray decorative lines. */
+section[data-edit-id="section-002"] article {
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+section[data-edit-id="section-002"] article *,
+section[data-edit-id="section-002"] [data-testimonial-id] * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+section[data-edit-id="section-002"] article::-webkit-scrollbar,
+section[data-edit-id="section-002"] article *::-webkit-scrollbar,
+section[data-edit-id="section-002"] [data-testimonial-id]::-webkit-scrollbar,
+section[data-edit-id="section-002"] [data-testimonial-id] *::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
