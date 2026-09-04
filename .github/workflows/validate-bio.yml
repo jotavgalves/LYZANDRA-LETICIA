@@ -1,0 +1,48 @@
+name: Validate bio landing
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - bio/**
+      - functions/api/bio-content.js
+      - .github/workflows/validate-bio.yml
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript
+        run: |
+          node --check bio/app.js
+          node --check bio/content.js
+          node --check bio/admin/admin.js
+          node --check functions/api/bio-content.js
+      - name: Validate bio structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s bio/index.html
+          test -s bio/styles.css
+          test -s bio/favicon.svg
+          test -s bio/admin/index.html
+          grep -q '/api/bio-content' bio/app.js
+          grep -q '/api/bio-content' bio/admin/admin.js
+          grep -q '/api/upload' bio/admin/admin.js
+          grep -q 'metaPixel' bio/content.js
+          grep -q 'ga4' bio/content.js
+          grep -q 'gtm' bio/content.js
+          grep -q 'isAdminPreview' bio/app.js
+          grep -q '/bio/favicon.svg' bio/content.js
+      - name: Validate admin security
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'isAuthed' functions/api/bio-content.js
+          grep -q '/api/session' bio/admin/admin.js
+          grep -q '/api/login' bio/admin/admin.js
+          grep -q 'noindex,nofollow,noarchive' bio/admin/index.html
