@@ -2,6 +2,35 @@
 html { scroll-behavior: smooth; }
 html, body { min-height: 100%; }
 body { min-height: 100vh; min-height: 100dvh; }
+
+/*
+ * One deterministic visual palette on every device.
+ * original.css contains a prefers-color-scheme rule that can replace the pink
+ * brand palette on phones configured for dark mode. This selector is more
+ * specific than that rule, while inline values written by the admin theme
+ * still win normally.
+ */
+html:root:not(.light):not(.dark) {
+  color-scheme: dark;
+  --background: #010101;
+  --foreground: #f8f4f6;
+  --card: #080407;
+  --card-foreground: #f8f4f6;
+  --popover: #080407;
+  --popover-foreground: #f8f4f6;
+  --primary: #fa4a98;
+  --primary-foreground: #fcfcfc;
+  --secondary: #130a10;
+  --secondary-foreground: #f8f4f6;
+  --muted: #130a10;
+  --muted-foreground: #8f828a;
+  --accent: #fa4a98;
+  --accent-foreground: #fcfcfc;
+  --border: #ffffff1a;
+  --input: #ffffff26;
+  --ring: #fa4a98;
+}
+
 main[data-edit-id="main-001"] {
   min-height: 100vh;
   min-height: 100dvh;
@@ -19,9 +48,9 @@ main[data-edit-id="main-001"] > footer[data-edit-id="footer-001"] {
 [id^="v0-built-with-button-"] { display: none !important; }
 .site-runtime-error { position:fixed; left:12px; bottom:12px; z-index:9998; max-width:360px; padding:10px 12px; border-radius:10px; background:#451a1a; color:#fee2e2; font:12px/1.4 Poppins,sans-serif; box-shadow:0 10px 30px #0008; }
 
-/* Keep the opening glow in one deterministic CSS layer. The captured inline
-   gradient used a negative z-index and could fall behind the page after the
-   runtime created new stacking contexts. */
+/* Keep the opening glow in one deterministic CSS layer. #fa4a98 is the exact
+   sRGB equivalent of the previous oklch(0.68 0.22 358), so desktop and mobile
+   now render the same effect even inside iOS/WhatsApp WebViews. */
 section[data-edit-id="section-001"] {
   isolation: isolate;
 }
@@ -31,7 +60,7 @@ section[data-edit-id="section-001"]::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(ellipse 60% 45% at 50% 0%, oklch(0.68 0.22 358 / 0.28), transparent 70%);
+  background: radial-gradient(ellipse 60% 45% at 50% 0%, rgba(250, 74, 152, .28), transparent 70%);
 }
 section[data-edit-id="section-001"] > [data-edit-id="div-001"] {
   display: none !important;
