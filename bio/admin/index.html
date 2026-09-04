@@ -2,50 +2,82 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
   <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Admin Bio · Ly Cílios</title>
-  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./admin.css?v=1">
+  <meta name="googlebot" content="noindex,nofollow,noarchive">
+  <title>Editor da bio | Lyzandra</title>
+  <link rel="stylesheet" href="./admin.css?v=2">
 </head>
 <body>
-  <section class="login" id="loginView">
-    <form class="login-card" id="loginForm">
-      <img class="login-logo" src="../favicon.svg" alt="Ly Cílios">
-      <h1>Admin da Bio</h1>
-      <p>Use a mesma senha administrativa da landing principal.</p>
-      <input id="password" type="password" autocomplete="current-password" placeholder="Senha administrativa" required>
-      <button class="btn primary" type="submit">Entrar</button>
-      <div class="error" id="loginError"></div>
-    </form>
-  </section>
+<section id="loginView" class="login-view">
+  <form id="loginForm" class="login-card">
+    <div class="login-logo">L</div>
+    <h1>Editar minha bio</h1>
+    <p>Edite a página da bio vendo o resultado na mesma hora.</p>
+    <label class="field"><span>Senha</span><input id="password" type="password" autocomplete="current-password" required autofocus placeholder="Digite sua senha"></label>
+    <button class="btn primary wide" type="submit">Entrar no editor</button>
+    <p id="loginError" class="error-text"></p>
+  </form>
+</section>
 
-  <main class="app hidden" id="adminApp">
-    <aside class="panel">
-      <header class="panel-head">
-        <div class="head-row">
-          <div class="head-brand"><img src="../favicon.svg" alt=""><div><strong>Bio · Ly Cílios</strong><span>Painel independente</span></div></div>
-          <div class="actions"><button class="btn soft" id="openBio" type="button">Abrir</button><button class="btn dark" id="saveBtn" type="button">Salvar</button></div>
-        </div>
-        <div class="tabs" id="tabs">
-          <button class="tab active" data-tab="geral" type="button">Geral</button>
-          <button class="tab" data-tab="imagens" type="button">Imagens</button>
-          <button class="tab" data-tab="links" type="button">Links</button>
-          <button class="tab" data-tab="marketing" type="button">Pixel & Ads</button>
-          <button class="tab" data-tab="visual" type="button">Visual</button>
-        </div>
-        <div class="status" id="saveStatus">Carregando…</div>
-      </header>
-      <div class="editor" id="editor"></div>
+<section id="adminApp" class="app hidden">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">L</span><div><strong>Editor visual</strong><small>Bio · Ly Cílios</small></div></div>
+    <div id="saveStatus" class="save-status saved"><span class="dot"></span><span>Salvo</span></div>
+    <button id="openBio" class="btn quiet" type="button">Abrir bio</button>
+    <button id="saveBtn" class="btn primary" type="button">Salvar alterações</button>
+    <button id="logoutBtn" class="btn quiet" type="button">Sair</button>
+  </header>
+
+  <div class="studio">
+    <aside class="sector-sidebar">
+      <div class="sector-sidebar-head"><strong>Partes da bio</strong><span>Edite uma parte por vez.</span></div>
+      <div id="tabs" class="sector-list">
+        <button class="sector-item active" data-tab="geral" type="button"><span class="sector-number">01</span><span><strong>Configurações gerais</strong><small>Marca, textos, redes e legal</small></span></button>
+        <button class="sector-item" data-tab="imagens" type="button"><span class="sector-number">02</span><span><strong>Imagens do topo</strong><small>Carrossel, enquadramento e textos</small></span></button>
+        <button class="sector-item" data-tab="links" type="button"><span class="sector-number">03</span><span><strong>Botões e acessos</strong><small>CTA, links, ordem e ícones</small></span></button>
+        <button class="sector-item" data-tab="marketing" type="button"><span class="sector-number">04</span><span><strong>Marketing e Pixel</strong><small>Meta, GA4, GTM e eventos</small></span></button>
+        <button class="sector-item" data-tab="visual" type="button"><span class="sector-number">05</span><span><strong>Visual</strong><small>Cores exclusivas da bio</small></span></button>
+      </div>
     </aside>
 
-    <section class="preview"><div class="device"><iframe id="previewFrame" src="../?admin-preview=1" title="Prévia da bio"></iframe></div></section>
-  </main>
-  <div class="toast hidden" id="toast"></div>
-  <script src="../content.js?v=1"></script>
-  <script src="./admin.js?v=1"></script>
+    <section class="editor-pane">
+      <div class="mobile-sector-picker">
+        <label for="sectorSelect">Parte da bio</label>
+        <select id="sectorSelect">
+          <option value="geral">Configurações gerais</option>
+          <option value="imagens">Imagens do topo</option>
+          <option value="links">Botões e acessos</option>
+          <option value="marketing">Marketing e Pixel</option>
+          <option value="visual">Visual</option>
+        </select>
+      </div>
+      <div class="editor-pane-head">
+        <span id="sectorEyebrow" class="eyebrow">BIO</span>
+        <h1 id="sectorTitle">Configurações gerais</h1>
+        <p id="sectorDescription">Marca, textos, redes sociais e links institucionais.</p>
+      </div>
+      <div id="editor" class="sector-editor"></div>
+    </section>
+
+    <section class="live-pane">
+      <div class="live-toolbar">
+        <div><strong>Prévia em tempo real</strong><small>Tudo que você altera aparece aqui imediatamente.</small></div>
+        <div class="preview-devices">
+          <button class="device" data-device="desktop" type="button">Computador</button>
+          <button class="device" data-device="tablet" type="button">Tablet</button>
+          <button class="device active" data-device="mobile" type="button">Celular</button>
+          <button id="reloadBtn" class="device" type="button">Atualizar</button>
+        </div>
+      </div>
+      <div class="live-stage"><div id="previewShell" class="preview-shell mobile"><iframe id="previewFrame" class="preview" src="../?admin-preview=1"></iframe></div></div>
+    </section>
+  </div>
+</section>
+
+<div id="toast" class="toast hidden"></div>
+<script src="../content.js?v=1"></script>
+<script src="./admin.js?v=2"></script>
 </body>
 </html>
