@@ -16,13 +16,20 @@
     return !!value && value !== '#' && !/^javascript:/i.test(value);
   }
 
-  function neutralizeAnchor(anchor) {
+  function isActivationUnlocked(anchor) {
+    return Number(anchor?.dataset?.activationUnlockedUntil || 0) > Date.now();
+  }
+
+  function neutralizeAnchor(anchor, force = false) {
     if (!(anchor instanceof HTMLAnchorElement)) return;
+    if (!force && isActivationUnlocked(anchor)) return;
+
     const liveHref = String(anchor.getAttribute('href') || '').trim();
     if (isUsableDestination(liveHref)) anchor.dataset.privateHref = liveHref;
     if (!isUsableDestination(anchor.dataset.privateHref || '')) return;
 
     anchor.removeAttribute('href');
+    delete anchor.dataset.activationUnlockedUntil;
     anchor.dataset.destinationHidden = 'true';
     if (!anchor.hasAttribute('role')) anchor.setAttribute('role', 'link');
     if (!anchor.hasAttribute('tabindex')) anchor.tabIndex = 0;
@@ -37,6 +44,7 @@
     if (!(anchor instanceof HTMLAnchorElement)) return '';
     const destination = destinationOf(anchor);
     if (!isUsableDestination(destination)) return '';
+    anchor.dataset.activationUnlockedUntil = String(Date.now() + 1200);
     anchor.setAttribute('href', destination);
     return destination;
   }
@@ -46,7 +54,8 @@
       if (!(anchor instanceof HTMLAnchorElement) || !anchor.isConnected) return;
       const current = String(anchor.getAttribute('href') || '').trim();
       if (isUsableDestination(current)) anchor.dataset.privateHref = current;
-      neutralizeAnchor(anchor);
+      delete anchor.dataset.activationUnlockedUntil;
+      neutralizeAnchor(anchor, true);
     }, delay);
   }
 
@@ -97,7 +106,7 @@
 
     // Checkout tracking may delay navigation for a few hundred milliseconds.
     // Keep href alive through that callback, then hide it again if the page is still open.
-    hideAgain(anchor, 900);
+    hideAgain(anchor, 950);
   }, true);
 
   window.addEventListener('keydown', event => {
@@ -117,7 +126,7 @@
     if (!anchor) return;
     if (event.key === 'Enter') {
       restoreForActivation(anchor);
-      hideAgain(anchor, 900);
+      hideAgain(anchor, 950);
     } else if (event.key === ' ') {
       event.preventDefault();
       restoreForActivation(anchor);
