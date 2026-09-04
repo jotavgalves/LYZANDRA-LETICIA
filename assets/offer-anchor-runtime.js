@@ -6,8 +6,6 @@
     const raw = value && typeof value === 'object' ? value : {};
     let targetRaw = String(raw.target || DEFAULT.target).trim();
 
-    // Migração do comportamento antigo: antes o CTA caía direto no card de preço.
-    // A partir da v2 o padrão é mostrar também título e contexto da oferta.
     if (Number(raw.destinationVersion || 0) < 2 && /^#?oferta-card$/i.test(targetRaw)) {
       targetRaw = '#planos';
     }
@@ -33,19 +31,28 @@
     } catch {}
   }
 
+  function visibleNavHeight() {
+    const nav = document.getElementById('conversionNav');
+    if (!nav) return 0;
+    const style = getComputedStyle(nav);
+    if (style.display === 'none' || style.visibility === 'hidden') return 0;
+    return Math.max(0, Math.round(nav.getBoundingClientRect().height || 0));
+  }
+
   function ensureOfferTargets(settings) {
+    const navOffset = visibleNavHeight();
     const section = document.querySelector('section[data-edit-id="section-009"]');
     if (section) {
       section.id = 'planos';
       section.dataset.offerSectionAnchor = '1';
-      section.style.scrollMarginTop = `${settings.offset}px`;
+      section.style.scrollMarginTop = `${settings.offset + navOffset}px`;
     }
 
     const card = document.querySelector('[data-edit-id="div-049"]');
     if (card) {
       card.id = 'oferta-card';
       card.dataset.offerAnchor = '1';
-      card.style.scrollMarginTop = `${settings.offset}px`;
+      card.style.scrollMarginTop = `${settings.offset + navOffset}px`;
     }
 
     return { section, card };
@@ -71,6 +78,7 @@
       try { destination = document.querySelector(selector); } catch {}
       if (!destination) return;
       event.preventDefault();
+      ensureOfferTargets(config);
       destination.scrollIntoView({ behavior: config.smooth ? 'smooth' : 'auto', block: 'start' });
       cleanAddress();
     });
@@ -102,6 +110,7 @@
   ['site-content-ready', 'site-render-ready', 'conversion-rendered'].forEach(name => {
     window.addEventListener(name, () => setTimeout(() => apply(window.__SITE_CONTENT__ || {}), 0));
   });
+  window.addEventListener('resize', () => ensureOfferTargets(config), { passive: true });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
   else boot();
