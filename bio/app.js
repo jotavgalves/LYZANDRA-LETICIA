@@ -20,6 +20,7 @@
   };
   const icon = (name, size=20) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.globe}</svg>`;
   const esc = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const isAdminPreview = new URLSearchParams(location.search).has('admin-preview');
 
   let config = clone(window.BIO_DEFAULT || {});
   let current = 0;
@@ -85,7 +86,6 @@
     document.querySelector('#featuredTitle').textContent=f.title||'';
     document.querySelector('#featuredSubtitle').textContent=f.subtitle||'';
     fa.dataset.bioLabel=f.title||'Destaque';
-
     const list=document.querySelector('#linksList');
     list.innerHTML=(config.links||[]).filter(x=>x?.visible!==false).map((x,i)=>`<a class="link-card" href="${esc(x.url||'#')}" data-bio-label="${esc(x.label||'Link '+(i+1))}"><span class="link-icon">${icon(x.icon||'globe')}</span><span class="link-copy"><strong>${esc(x.label||'')}</strong><small>${esc(x.detail||'')}</small></span><span class="link-arrow">›</span></a>`).join('');
   }
@@ -113,10 +113,11 @@
     document.querySelector('#tagsSection').hidden=config.tags?.visible===false;
     document.querySelector('#tagsList').innerHTML=(config.tags?.items||[]).map(x=>`<span>${esc(x)}</span>`).join('');
     renderHero(); renderLinks(); renderSocials(); setupMarketing(); bindTracking();
-    window.__BIO_CONFIG__=config;
+    window.__BIO_CONFIG__=clone(config);
   }
 
   function setupMarketing(){
+    if(isAdminPreview) return;
     const m=config.marketing||{};
     if(m.metaPixel?.enabled && m.metaPixel.id && !window.__bioMeta){
       window.__bioMeta=true;
@@ -135,7 +136,7 @@
   }
 
   function bindTracking(){
-    if(config.marketing?.trackClicks===false) return;
+    if(isAdminPreview || config.marketing?.trackClicks===false) return;
     document.querySelectorAll('[data-bio-label]').forEach(a=>{
       if(a.dataset.tracked==='1') return; a.dataset.tracked='1';
       a.addEventListener('click',()=>{
@@ -147,9 +148,9 @@
     });
   }
 
-  document.querySelector('#shareBtn').onclick=async()=>{
-    try{ if(navigator.share) await navigator.share({title:document.title,text:config.site?.description||'',url:location.href}); else await navigator.clipboard.writeText(location.href); }catch{}
-  };
+  function apply(next){ config=merge(clone(window.BIO_DEFAULT||{}),next||{}); render(); }
+  window.BioApp={apply,getConfig:()=>clone(config)};
+  document.querySelector('#shareBtn').onclick=async()=>{try{if(navigator.share)await navigator.share({title:document.title,text:config.site?.description||'',url:location.href});else await navigator.clipboard.writeText(location.href)}catch{}};
   document.addEventListener('visibilitychange',()=>document.hidden?clearInterval(timer):restart(document.querySelectorAll('.slide').length));
   load();
 })();
