@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080508">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Ly Cílios — Speed Lash, formação profissional em extensão de cílios com Lyzandra Letícia.">
+  <title>Ly Cílios | Speed Lash</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css?v=1">
+</head>
+<body>
+  <div class="background-effects" aria-hidden="true"><div class="grain"></div><div class="glow one"></div><div class="glow two"></div></div>
+  <main class="bio-shell" id="bioApp" aria-live="polite">
+    <section class="hero" id="heroCarousel" aria-label="Destaques Ly Cílios">
+      <div class="slides" id="slides"></div>
+      <div class="hero-shade"></div>
+      <div class="top-controls">
+        <div class="brand-lockup">
+          <img id="brandLogo" class="brand-mark" src="./favicon.svg" alt="Ly Cílios">
+          <div class="brand-copy"><strong id="brandName">LY CÍLIOS</strong><span id="brandSubtitle">BY LYZANDRA LETÍCIA</span></div>
+        </div>
+        <button class="share" id="shareBtn" type="button" aria-label="Compartilhar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>
+        </button>
+      </div>
+      <div class="indicators" id="slideIndicators"></div>
+    </section>
+
+    <section class="content-stack">
+      <a class="featured-link" id="featuredLink">
+        <span class="featured-inner"><span class="featured-icon" id="featuredIcon"></span><span class="featured-copy"><strong id="featuredTitle"></strong><small id="featuredSubtitle"></small></span><span class="arrow">→</span></span>
+      </a>
+
+      <section class="links-section" aria-labelledby="linksHeading"><p class="section-label" id="linksHeading">Acessos</p><div class="links-list" id="linksList"></div></section>
+
+      <section class="bio-card" id="bioCard"><span class="mini-name" id="quoteAuthor"></span><p class="bio-quote" id="bioQuote"></p><p class="bio-location" id="bioLocation"></p></section>
+
+      <section class="services-strip" id="tagsSection"><p class="section-label" id="tagsTitle"></p><div class="services-list" id="tagsList"></div></section>
+
+      <div class="socials" id="socials"></div>
+    </section>
+
+    <footer><nav><a id="termsLink">Termos</a><a id="privacyLink">Privacidade</a></nav><p>© 2026 Ly Cílios · Speed Lash</p><p>Formação profissional em extensão de cílios.</p></footer>
+  </main>
+  <script src="./content.js?v=1"></script>
+  <script src="./app.js?v=1"></script>
+</body>
+</html>
