@@ -1,0 +1,6 @@
+/* User-requested visual corrections. Keep these overrides after premium-experience.css. */
+
+/* Remove the two decorative arc lines above the hero title. */
+.ly-hero-signature{
+  display:none!important;
+}
