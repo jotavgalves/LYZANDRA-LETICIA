@@ -4,7 +4,7 @@
   const generalBtn = document.querySelector('#generalBtn');
   if (!preview || !editorBox || !generalBtn) return;
 
-  const DEFAULT = { target: '#oferta-card', offset: 24, smooth: true };
+  const DEFAULT = { target: '#planos', offset: 24, smooth: true, destinationVersion: 2 };
   let settings = { ...DEFAULT };
   let loaded = false;
   let saving = false;
@@ -23,11 +23,13 @@
   function normalize(value) {
     const raw = value && typeof value === 'object' ? value : {};
     let target = String(raw.target || DEFAULT.target).trim();
+    if (Number(raw.destinationVersion || 0) < 2 && /^#?oferta-card$/i.test(target)) target = '#planos';
     if (target && !/^(https?:|mailto:|tel:|#)/i.test(target)) target = `#${target.replace(/^#/, '')}`;
     return {
       target: target || DEFAULT.target,
       offset: Math.max(0, Math.min(300, Number(raw.offset ?? DEFAULT.offset) || 0)),
-      smooth: raw.smooth !== false
+      smooth: raw.smooth !== false,
+      destinationVersion: 2
     };
   }
 
@@ -90,8 +92,8 @@
   }
 
   function targetLabel(target) {
-    if (target === '#oferta-card') return 'Card exato de preço e compra';
     if (target === '#planos') return 'Início da seção de oferta';
+    if (target === '#oferta-card') return 'Card exato de preço e compra';
     return 'Destino personalizado';
   }
 
@@ -105,14 +107,14 @@
     card.id = 'offerAnchorControlCard';
     card.className = 'general-card';
     card.style.cssText += ';display:grid;gap:10px;';
-    card.innerHTML = '<h3 style="margin:0">Destino do botão principal</h3><p style="font-size:10px;color:#807981;line-height:1.55;margin:-3px 0 2px">Controla para onde o botão “QUERO MINHA VAGA” do primeiro bloco leva a visitante. O padrão abre exatamente no topo do card de preço.</p>';
+    card.innerHTML = '<h3 style="margin:0">Destino do botão principal</h3><p style="font-size:10px;color:#807981;line-height:1.55;margin:-3px 0 2px">Controla para onde o botão “QUERO MINHA VAGA” leva. O padrão abre no início da oferta, mostrando o título “Garanta seu acesso ao Speed Lash” e o card de preço logo abaixo.</p>';
 
     const presetWrap = document.createElement('div');
     presetWrap.className = 'mini-field';
     const presetLabel = document.createElement('label');
     presetLabel.textContent = 'Destino';
     const select = document.createElement('select');
-    select.innerHTML = '<option value="#oferta-card">Card de preço (recomendado)</option><option value="#planos">Início da seção de oferta</option><option value="__custom__">Personalizado</option>';
+    select.innerHTML = '<option value="#planos">Início da seção de oferta (recomendado)</option><option value="#oferta-card">Somente o card de preço</option><option value="__custom__">Personalizado</option>';
     select.value = ['#oferta-card', '#planos'].includes(settings.target) ? settings.target : '__custom__';
     presetWrap.append(presetLabel, select);
     card.appendChild(presetWrap);
@@ -161,12 +163,14 @@
       customWrap.style.display = select.value === '__custom__' ? 'grid' : 'none';
       if (select.value !== '__custom__') {
         settings.target = select.value;
+        settings.destinationVersion = 2;
         schedulePersist();
         render(true);
       }
     };
     custom.oninput = () => {
       settings.target = custom.value.trim() || DEFAULT.target;
+      settings.destinationVersion = 2;
       schedulePersist();
     };
     offset.oninput = () => {
