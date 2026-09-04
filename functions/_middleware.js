@@ -23,6 +23,8 @@ class HeadInjector {
     if (this.publicLanding) {
       html += '<style id="ly-site-boot-style">html[data-site-booting] body{visibility:hidden}</style>';
       html += '<script id="ly-site-boot">document.documentElement.setAttribute("data-site-booting","1");setTimeout(function(){document.documentElement.removeAttribute("data-site-booting")},2200);</script>';
+      html += '<link rel="preconnect" href="https://pay.kiwify.com.br" crossorigin>';
+      html += '<link rel="dns-prefetch" href="//pay.kiwify.com.br">';
       html += '<link rel="stylesheet" href="/assets/conversion.css?v=2">';
       html += '<link rel="stylesheet" href="/assets/mobile-polish.css?v=2">';
       html += '<link rel="stylesheet" href="/assets/premium-experience.css?v=1">';
@@ -54,6 +56,25 @@ class HeadInjector {
     }
     if (this.admin) html += '<script defer data-conversion-admin="1" src="/admin/conversion.js?v=3"></script>';
     if (html) head.append(html, { html: true });
+  }
+}
+
+class ImagePerformanceHandler {
+  constructor(hero = false) { this.hero = hero; }
+  element(img) {
+    img.setAttribute('decoding', 'async');
+    if (this.hero) {
+      img.setAttribute('loading', 'eager');
+      img.setAttribute('fetchpriority', 'high');
+    } else if (!img.getAttribute('loading')) {
+      img.setAttribute('loading', 'lazy');
+    }
+  }
+}
+
+class IframePerformanceHandler {
+  element(frame) {
+    if (!frame.getAttribute('loading')) frame.setAttribute('loading', 'lazy');
   }
 }
 
@@ -105,6 +126,12 @@ export async function onRequest(context) {
 
   const fallbackImage = publicLanding && !configuredImage ? DEFAULT_OG_IMAGE : '';
   let rewriter = new HTMLRewriter().on('head', new HeadInjector({ image: fallbackImage, publicLanding, admin }));
+  if (publicLanding) {
+    rewriter = rewriter
+      .on('img', new ImagePerformanceHandler(false))
+      .on('section[data-edit-id="section-001"] img', new ImagePerformanceHandler(true))
+      .on('iframe', new IframePerformanceHandler());
+  }
   if (fallbackImage) rewriter = rewriter.on('meta[name="twitter:card"]', new TwitterCardHandler());
   if (legalKind) rewriter = rewriter.on('main#legalContent', new LegalMainHandler(legalKind, legal));
   const rewritten = rewriter.transform(response);
