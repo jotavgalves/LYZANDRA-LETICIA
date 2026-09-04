@@ -1,4 +1,4 @@
-import { isAuthed, json } from '../../src/auth.js';
+import { isAuthed } from '../../src/auth.js';
 
 const PREFIX = 'analytics:v1:';
 const TTL_SECONDS = 60 * 60 * 24 * 60;
@@ -33,6 +33,14 @@ function response(data, status, request) {
   const headers = { 'content-type': 'application/json; charset=utf-8', ...corsHeaders(request) };
   return new Response(JSON.stringify(data), { status, headers });
 }
+async function trackingEnabled(env) {
+  try {
+    const content = await env.SITE_CONTENT?.get('site-content', 'json');
+    return content?.site?.growth?.analytics?.enabled !== false;
+  } catch {
+    return true;
+  }
+}
 
 export async function onRequestOptions({ request }) {
   return new Response(null, { status: 204, headers: corsHeaders(request) });
@@ -40,6 +48,7 @@ export async function onRequestOptions({ request }) {
 
 export async function onRequestPost({ request, env }) {
   if (!env.SITE_CONTENT) return response({ ok: false }, 503, request);
+  if (!(await trackingEnabled(env))) return response({ ok: true, disabled: true }, 200, request);
   let body;
   try { body = await request.json(); } catch { return response({ error: 'JSON inválido.' }, 400, request); }
 
@@ -56,15 +65,7 @@ export async function onRequestPost({ request, env }) {
   const campaign = clean(body?.campaign, 80);
   const token = event === 'bio_link' || event === 'campaign_click' ? safeToken(label || campaign) : 'stage';
   const key = `${PREFIX}${dateKey(now)}:${page}:${event}:${safeToken(session)}:${token}`;
-  const metadata = {
-    event,
-    page,
-    label,
-    source,
-    campaign,
-    day: dateKey(now),
-    at: now.toISOString()
-  };
+  const metadata = { event, page, label, source, campaign, day: dateKey(now), at: now.toISOString() };
   await env.SITE_CONTENT.put(key, '1', { expirationTtl: TTL_SECONDS, metadata });
   return response({ ok: true }, 200, request);
 }
