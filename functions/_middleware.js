@@ -28,6 +28,7 @@ class HeadInjector {
       html += '<link rel="stylesheet" href="/assets/conversion.css?v=2">';
       html += '<link rel="stylesheet" href="/assets/mobile-polish.css?v=2">';
       html += '<link rel="stylesheet" href="/assets/premium-experience.css?v=1">';
+      html += '<link rel="stylesheet" href="/assets/user-feedback-fixes.css?v=1">';
       html += '<link rel="stylesheet" href="/assets/public-hardening.css?v=1">';
       html += '<script defer data-conversion-runtime="1" src="/assets/conversion-runtime.js?v=3"></script>';
       html += '<script defer data-identity-runtime="1" src="/assets/identity-runtime.js?v=2"></script>';
