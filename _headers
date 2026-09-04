@@ -33,3 +33,12 @@
 
 /assets/mobile-polish.js
   Cache-Control: no-cache, must-revalidate
+
+/assets/offer-anchor-runtime.js
+  Cache-Control: no-cache, must-revalidate
+
+/assets/public-hardening.css
+  Cache-Control: no-cache, must-revalidate
+
+/assets/public-hardening.js
+  Cache-Control: no-cache, must-revalidate
