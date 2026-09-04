@@ -10,6 +10,10 @@
   Cache-Control: no-store, no-cache, must-revalidate
   X-Robots-Tag: noindex, follow
 
+/obrigado.html
+  Cache-Control: no-store, no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow, noarchive
+
 /assets/clone.css
   Cache-Control: no-cache, must-revalidate
 
@@ -41,4 +45,25 @@
   Cache-Control: no-cache, must-revalidate
 
 /assets/public-hardening.js
+  Cache-Control: no-cache, must-revalidate
+
+/assets/premium-experience.css
+  Cache-Control: no-cache, must-revalidate
+
+/assets/premium-experience.js
+  Cache-Control: no-cache, must-revalidate
+
+/assets/campaign-runtime.js
+  Cache-Control: no-cache, must-revalidate
+
+/assets/analytics-runtime.js
+  Cache-Control: no-cache, must-revalidate
+
+/assets/thank-you.css
+  Cache-Control: no-cache, must-revalidate
+
+/assets/thank-you.js
+  Cache-Control: no-cache, must-revalidate
+
+/bio/attribution.js
   Cache-Control: no-cache, must-revalidate
