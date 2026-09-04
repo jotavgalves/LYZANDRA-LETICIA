@@ -1,17 +1,25 @@
 (() => {
-  const DEFAULT = { target: '#oferta-card', offset: 24, smooth: true };
+  const DEFAULT = { target: '#planos', offset: 24, smooth: true, destinationVersion: 2 };
   let config = { ...DEFAULT };
 
   function normalize(value) {
     const raw = value && typeof value === 'object' ? value : {};
-    const targetRaw = String(raw.target || DEFAULT.target).trim();
+    let targetRaw = String(raw.target || DEFAULT.target).trim();
+
+    // Migração do comportamento antigo: antes o CTA caía direto no card de preço.
+    // A partir da v2 o padrão é mostrar também título e contexto da oferta.
+    if (Number(raw.destinationVersion || 0) < 2 && /^#?oferta-card$/i.test(targetRaw)) {
+      targetRaw = '#planos';
+    }
+
     const target = /^(https?:|mailto:|tel:|#)/i.test(targetRaw)
       ? targetRaw
       : `#${targetRaw.replace(/^#/, '')}`;
     return {
       target: target || DEFAULT.target,
       offset: Math.max(0, Math.min(300, Number(raw.offset ?? DEFAULT.offset) || 0)),
-      smooth: raw.smooth !== false
+      smooth: raw.smooth !== false,
+      destinationVersion: 2
     };
   }
 
@@ -25,13 +33,22 @@
     } catch {}
   }
 
-  function ensureOfferCard(settings) {
+  function ensureOfferTargets(settings) {
+    const section = document.querySelector('section[data-edit-id="section-009"]');
+    if (section) {
+      section.id = 'planos';
+      section.dataset.offerSectionAnchor = '1';
+      section.style.scrollMarginTop = `${settings.offset}px`;
+    }
+
     const card = document.querySelector('[data-edit-id="div-049"]');
-    if (!card) return null;
-    card.id = 'oferta-card';
-    card.dataset.offerAnchor = '1';
-    card.style.scrollMarginTop = `${settings.offset}px`;
-    return card;
+    if (card) {
+      card.id = 'oferta-card';
+      card.dataset.offerAnchor = '1';
+      card.style.scrollMarginTop = `${settings.offset}px`;
+    }
+
+    return { section, card };
   }
 
   function internalSelector(target) {
@@ -61,7 +78,7 @@
 
   function apply(data = window.__SITE_CONTENT__ || {}) {
     config = getSettings(data);
-    ensureOfferCard(config);
+    ensureOfferTargets(config);
     bindPrimaryButton(config);
     return { ...config };
   }
