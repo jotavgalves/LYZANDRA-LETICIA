@@ -1,0 +1,24 @@
+/* Public interaction hardening. This is deterrence only; browser developer tools cannot be made impossible. */
+html:not([data-admin-preview]) img,
+html:not([data-admin-preview]) picture,
+html:not([data-admin-preview]) video,
+html:not([data-admin-preview]) canvas,
+html:not([data-admin-preview]) svg {
+  -webkit-user-drag: none !important;
+  user-drag: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+a[data-destination-hidden="true"],
+a[data-private-href] {
+  cursor: pointer;
+}
+
+img[data-asset-protected="true"],
+picture[data-asset-protected="true"],
+video[data-asset-protected="true"],
+canvas[data-asset-protected="true"],
+svg[data-asset-protected="true"] {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
