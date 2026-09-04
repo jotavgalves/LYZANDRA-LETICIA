@@ -1,0 +1,58 @@
+name: Validate growth suite
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/premium-experience.css'
+      - 'assets/premium-experience.js'
+      - 'assets/analytics-runtime.js'
+      - 'assets/campaign-runtime.js'
+      - 'assets/thank-you.css'
+      - 'assets/thank-you.js'
+      - 'admin/growth.js'
+      - 'admin/scroll-depth.js'
+      - 'functions/api/analytics.js'
+      - 'bio/attribution.js'
+      - 'bio/index.html'
+      - 'obrigado.html'
+      - 'functions/_middleware.js'
+      - 'admin/index.html'
+      - '_headers'
+      - '.github/workflows/validate-growth.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript
+        run: |
+          node --check assets/premium-experience.js
+          node --check assets/analytics-runtime.js
+          node --check assets/campaign-runtime.js
+          node --check assets/thank-you.js
+          node --check admin/growth.js
+          node --check admin/scroll-depth.js
+          node --check functions/api/analytics.js
+          node --check bio/attribution.js
+      - name: Validate integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'premium-experience.css' functions/_middleware.js
+          grep -q 'analytics-runtime.js' functions/_middleware.js
+          grep -q 'campaign-runtime.js' functions/_middleware.js
+          grep -q 'public-hardening.js?v=2' functions/_middleware.js
+          grep -q '/admin/growth.js?v=1' admin/index.html
+          grep -q '/admin/scroll-depth.js?v=1' admin/index.html
+          grep -q 'Crescimento & Funil' admin/growth.js
+          grep -q 'Profundidade de scroll' admin/scroll-depth.js
+          grep -q 'countdownEnabled' assets/campaign-runtime.js
+          grep -q 'scroll_75' assets/analytics-runtime.js
+          grep -q 'thankyou_view' functions/api/analytics.js
+          grep -q 'bio_link' functions/api/analytics.js
+          grep -q 'instagram-bio' bio/attribution.js
+          grep -q 'id="tyTitle"' obrigado.html
+          grep -q 'noindex,nofollow,noarchive' obrigado.html
+          grep -q '/obrigado.html' _headers
