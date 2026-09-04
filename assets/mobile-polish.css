@@ -1,21 +1,14 @@
-/* Mobile fidelity layer: keeps the phone experience aligned with the desktop visual system. */
-:root{
-  --ly-mobile-bg:#0a0508;
-  --ly-mobile-fg:#fff7fb;
-  --ly-mobile-primary:#fa4a98;
-  --ly-mobile-primary-soft:#f7a4ca;
-  --ly-mobile-card:#120b0f;
-  --ly-mobile-muted:#aca1a7;
-}
+/* Mobile behavior layer only. Visual identity (palette, glow, cards and effects)
+   is inherited from the same desktop CSS so the brand does not change by device. */
 
 /* Video controls: never depend on emoji/text glyph rendering. */
 .site-video-player [data-site-play-icon],
 [data-edit-id="span-004"],
 [data-edit-id="span-026"]{
-  background:linear-gradient(135deg,var(--ly-mobile-primary),var(--ly-mobile-primary-soft))!important;
+  background:linear-gradient(135deg,var(--primary),#fda5d5)!important;
   color:#fff!important;
   border:1px solid rgba(255,255,255,.22)!important;
-  box-shadow:0 12px 36px rgba(250,74,152,.34),0 5px 18px rgba(0,0,0,.38)!important;
+  box-shadow:0 12px 36px color-mix(in srgb,var(--primary) 34%,transparent),0 5px 18px rgba(0,0,0,.38)!important;
 }
 .site-video-player [data-site-play-icon] svg,
 [data-edit-id="span-004"] svg,
@@ -45,37 +38,12 @@ a[data-edit-id="a-006"] > svg[data-whatsapp-replaced="true"]{display:none!import
 
 @media(max-width:640px){
   html,body{
-    background:var(--ly-mobile-bg)!important;
-    color:var(--ly-mobile-fg)!important;
     overscroll-behavior-y:none;
   }
-  html{
-    --background:var(--ly-mobile-bg);
-    --foreground:var(--ly-mobile-fg);
-    --card:var(--ly-mobile-card);
-    --card-foreground:var(--ly-mobile-fg);
-    --primary:var(--ly-mobile-primary);
-    --primary-foreground:#18070f;
-    --muted-foreground:var(--ly-mobile-muted);
-    --ring:var(--ly-mobile-primary);
-  }
-  main[data-edit-id="main-001"]{background:var(--ly-mobile-bg)!important;color:var(--ly-mobile-fg)!important}
 
-  /* Preserve the desktop glow using deterministic sRGB colors on iOS/WebViews. */
-  #inicio{isolation:isolate;background-color:var(--ly-mobile-bg)!important}
-  #inicio::before{
-    content:"";
-    position:absolute;
-    z-index:-1;
-    pointer-events:none;
-    top:-150px;
-    left:50%;
-    width:min(760px,145vw);
-    height:470px;
-    transform:translateX(-50%);
-    background:radial-gradient(ellipse at center,rgba(250,74,152,.20) 0%,rgba(126,27,71,.10) 38%,rgba(10,5,8,0) 72%);
-  }
-  #inicio>[aria-hidden="true"]{opacity:.35!important}
+  /* Do not redefine --background, --card, --primary, muted colors or the hero
+     glow here. Mobile intentionally inherits the exact same visual system used
+     by desktop. Only geometry/interaction remains device-specific below. */
 
   /* Static and runtime video play controls share one premium treatment. */
   .site-video-player [data-site-play-icon],
@@ -117,7 +85,7 @@ a[data-edit-id="a-006"] > svg[data-whatsapp-replaced="true"]{display:none!import
   .conversion-enhanced a[data-edit-id="a-006"] > svg:not([data-whatsapp-brand-svg]){display:none!important}
   .conversion-enhanced a[data-edit-id="a-006"] [data-whatsapp-brand-icon]{display:grid!important}
 
-  /* Rebuilt sticky CTA: safe-area aware, symmetric and never clipped by the in-app browser. */
+  /* Sticky CTA geometry only; colors come from the same site palette. */
   .conversion-sticky-cta{
     position:fixed!important;
     z-index:1900!important;
@@ -142,19 +110,19 @@ a[data-edit-id="a-006"] > svg[data-whatsapp-replaced="true"]{display:none!import
     box-sizing:border-box!important;
     border-radius:20px!important;
     overflow:hidden!important;
-    background:linear-gradient(100deg,var(--ly-mobile-primary) 0%,#f77fba 58%,var(--ly-mobile-primary-soft) 100%)!important;
+    background:linear-gradient(100deg,var(--primary) 0%,#fb64b6 58%,#fda5d5 100%)!important;
     border:1px solid rgba(255,255,255,.25)!important;
-    box-shadow:0 16px 42px rgba(0,0,0,.46),0 8px 30px rgba(250,74,152,.23)!important;
+    box-shadow:0 16px 42px rgba(0,0,0,.46),0 8px 30px color-mix(in srgb,var(--primary) 23%,transparent)!important;
   }
   .conversion-sticky-cta a>span{min-width:0!important;text-align:left!important}
-  .conversion-sticky-cta strong{font-size:13px!important;line-height:1.15!important;color:#18070f!important}
-  .conversion-sticky-cta small{margin-top:3px!important;font-size:10px!important;color:rgba(24,7,15,.68)!important;opacity:1!important}
+  .conversion-sticky-cta strong{font-size:13px!important;line-height:1.15!important;color:var(--primary-foreground)!important}
+  .conversion-sticky-cta small{margin-top:3px!important;font-size:10px!important;color:color-mix(in srgb,var(--primary-foreground) 68%,transparent)!important;opacity:1!important}
   .conversion-sticky-cta a>b{
     width:38px!important;
     height:38px!important;
     flex:0 0 38px!important;
-    background:rgba(24,7,15,.09)!important;
-    color:#18070f!important;
+    background:rgba(0,0,0,.10)!important;
+    color:var(--primary-foreground)!important;
     font-size:20px!important;
   }
 
