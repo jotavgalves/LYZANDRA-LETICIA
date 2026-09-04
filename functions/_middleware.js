@@ -42,6 +42,7 @@ class HeadInjector {
       html += '<script defer data-premium-experience="1" src="/assets/premium-experience.js?v=1"></script>';
       html += '<script defer data-campaign-runtime="1" src="/assets/campaign-runtime.js?v=1"></script>';
       html += '<script defer data-funnel-analytics="1" src="/assets/analytics-runtime.js?v=1"></script>';
+      html += '<script defer data-video-poster-guard="1" src="/assets/video-poster-guard.js?v=1"></script>';
       html += '<script defer data-public-hardening="1" src="/assets/public-hardening.js?v=2"></script>';
       if (this.image) {
         const image = escapeAttr(this.image);
