@@ -19,6 +19,12 @@
     return normalize(data?.site?.primaryCta || window.__SITE_CONTENT__?.site?.primaryCta || {});
   }
 
+  function cleanAddress() {
+    try {
+      history.replaceState(history.state, '', `${location.pathname}${location.search}`);
+    } catch {}
+  }
+
   function ensureOfferCard(settings) {
     const card = document.querySelector('[data-edit-id="div-049"]');
     if (!card) return null;
@@ -49,7 +55,7 @@
       if (!destination) return;
       event.preventDefault();
       destination.scrollIntoView({ behavior: config.smooth ? 'smooth' : 'auto', block: 'start' });
-      try { history.replaceState(null, '', target); } catch {}
+      cleanAddress();
     });
   }
 
