@@ -81,8 +81,8 @@ jobs:
           set -euo pipefail
           test -s assets/mobile-polish.css
           test -s assets/mobile-polish.js
-          grep -q 'mobile-polish.css?v=1' functions/_middleware.js
-          grep -q 'mobile-polish.js?v=2' functions/_middleware.js
+          grep -Fq 'mobile-polish.css?v=2' functions/_middleware.js
+          grep -Fq 'mobile-polish.js?v=2' functions/_middleware.js
           grep -q 'data-whatsapp-brand-icon' assets/mobile-polish.js
           grep -q 'sitePlayIcon' assets/mobile-polish.js
           grep -q 'mobile-cta-visible' assets/mobile-polish.js
@@ -95,6 +95,7 @@ jobs:
           grep -q 'safe-area-inset-bottom' assets/mobile-polish.css
           grep -q '#25d366' assets/mobile-polish.css
           grep -q 'overscroll-behavior-y:none' assets/mobile-polish.css
+          grep -Fq 'does not change by device' assets/mobile-polish.css
       - name: Validate editable dynamic blocks
         shell: bash
         run: |
