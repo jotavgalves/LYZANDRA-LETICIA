@@ -36,23 +36,31 @@ jobs:
           node --check admin/scroll-depth.js
           node --check functions/api/analytics.js
           node --check bio/attribution.js
+          node --check functions/_middleware.js
       - name: Validate integration
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'premium-experience.css' functions/_middleware.js
-          grep -q 'analytics-runtime.js' functions/_middleware.js
-          grep -q 'campaign-runtime.js' functions/_middleware.js
-          grep -q 'public-hardening.js?v=2' functions/_middleware.js
-          grep -q '/admin/growth.js?v=1' admin/index.html
-          grep -q '/admin/scroll-depth.js?v=1' admin/index.html
-          grep -q 'Crescimento & Funil' admin/growth.js
-          grep -q 'Profundidade de scroll' admin/scroll-depth.js
-          grep -q 'countdownEnabled' assets/campaign-runtime.js
-          grep -q 'scroll_75' assets/analytics-runtime.js
-          grep -q 'thankyou_view' functions/api/analytics.js
-          grep -q 'bio_link' functions/api/analytics.js
-          grep -q 'instagram-bio' bio/attribution.js
-          grep -q 'id="tyTitle"' obrigado.html
-          grep -q 'noindex,nofollow,noarchive' obrigado.html
-          grep -q '/obrigado.html' _headers
+          test -s assets/premium-experience.css
+          test -s assets/premium-experience.js
+          test -s assets/analytics-runtime.js
+          test -s assets/campaign-runtime.js
+          test -s functions/api/analytics.js
+          test -s obrigado.html
+          grep -Fq 'premium-experience.css?v=1' functions/_middleware.js
+          grep -Fq 'analytics-runtime.js?v=1' functions/_middleware.js
+          grep -Fq 'campaign-runtime.js?v=1' functions/_middleware.js
+          grep -Fq 'public-hardening.js?v=2' functions/_middleware.js
+          grep -Fq 'fetchpriority' functions/_middleware.js
+          grep -Fq '/admin/growth.js?v=1' admin/index.html
+          grep -Fq '/admin/scroll-depth.js?v=1' admin/index.html
+          grep -Fq 'Crescimento & Funil' admin/growth.js
+          grep -Fq 'Profundidade de scroll' admin/scroll-depth.js
+          grep -Fq 'countdownEnabled' assets/campaign-runtime.js
+          grep -Fq 'scroll_75' assets/analytics-runtime.js
+          grep -Fq 'thankyou_view' functions/api/analytics.js
+          grep -Fq 'bio_link' functions/api/analytics.js
+          grep -Fq 'instagram-bio' bio/attribution.js
+          grep -Fq 'id="tyTitle"' obrigado.html
+          grep -Fq 'noindex,nofollow,noarchive' obrigado.html
+          grep -Fq '/obrigado.html' _headers
