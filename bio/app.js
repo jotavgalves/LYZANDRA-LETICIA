@@ -101,7 +101,6 @@
     const s=config.site||{};
     document.title=s.title||'Ly Cílios | Speed Lash';
     const md=document.querySelector('meta[name="description"]'); if(md) md.content=s.description||'';
-    document.querySelector('#brandLogo').src=s.logo||'/bio/favicon.svg';
     document.querySelector('#brandName').textContent=s.brand||'LY CÍLIOS';
     document.querySelector('#brandSubtitle').textContent=s.brandSubtitle||'';
     document.querySelector('#bioQuote').textContent=s.quote||'';
